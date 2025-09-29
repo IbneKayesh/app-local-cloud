@@ -1,0 +1,239 @@
+/* --- General --- */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f5f5f5;
+}
+
+/* --- Header --- */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ffffff;
+  border-bottom: 1px solid #ccc;
+  padding: 10px 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.header-right {
+  display: flex;
+  gap: 10px; /* space between buttons */
+}
+
+.header-right button {
+  padding: 6px 12px;
+  border: none;
+  background-color: #0078d7;
+  color: white;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.header-right button:hover {
+  background-color: #005a9e;
+}
+
+/* --- Breadcrumbs --- */
+#breadcrumbs {
+  white-space: nowrap;
+  overflow-x: auto;
+}
+
+.breadcrumb-link {
+  color: #0078d7;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.breadcrumb-link:hover {
+  text-decoration: underline;
+}
+
+/* --- Main Sections --- */
+main {
+  padding: 15px 20px;
+}
+
+h2 {
+  margin-top: 0;
+  font-size: 18px;
+  color: #333;
+}
+
+/* --- Tables --- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  background: #ffffff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+th, td {
+  padding: 10px 15px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+th {
+  background-color: #f0f0f0;
+  font-weight: bold;
+}
+
+tr:hover {
+  background-color: #f0f8ff;
+}
+
+td button {
+  padding: 5px 8px;
+  margin-right: 5px;
+  border: none;
+  background-color: #0078d7;
+  color: white;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+td button:hover {
+  background-color: #005a9e;
+}
+
+td:first-child {
+  width: 40%;
+}
+
+td:nth-child(2),
+td:nth-child(3) {
+  width: 15%;
+}
+
+td:last-child {
+  width: 30%;
+  text-align: right;
+}
+
+/* --- Upload Section --- */
+#uploadSection {
+  margin-top: 15px;
+  padding: 10px;
+  background: #fff;
+  border-top: 1px solid #ccc;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  border-radius: 4px;
+}
+
+#uploadSection button {
+  font-size: 13px;
+}
+
+/* Section Titles */
+#driveSection h2,
+#fileSection h2 {
+  margin-bottom: 5px;
+}
+
+/* --- Modals --- */
+.modal {
+  display: none; 
+  position: fixed; 
+  z-index: 100; 
+  left: 0;
+  top: 0;
+  width: 100%; 
+  height: 100%; 
+  background-color: rgba(0,0,0,0.4);
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 20px 25px;
+  border-radius: 6px;
+  min-width: 300px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.modal-content input {
+  width: 100%;
+  padding: 6px 8px;
+  margin-top: 10px;
+  box-sizing: border-box;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.modal-actions button {
+  padding: 5px 10px;
+  border-radius: 3px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+#confirmCreateFolderBtn {
+  background-color: #0078d7;
+  color: white;
+}
+
+#confirmCreateFolderBtn:hover {
+  background-color: #005a9e;
+}
+
+#cancelCreateFolderBtn {
+  background-color: #ccc;
+}
+
+#cancelCreateFolderBtn:hover {
+  background-color: #aaa;
+}
+
+#confirmUploadBtn {
+  background-color: #0078d7;
+  color: white;
+}
+
+#confirmUploadBtn:hover {
+  background-color: #005a9e;
+}
+
+#cancelUploadBtn {
+  background-color: #ccc;
+}
+
+#cancelUploadBtn:hover {
+  background-color: #aaa;
+}
+
+/* --- Drive Section --- */
+#driveSection {
+  padding: 20px;
+  text-align: left;  /* align everything inside left */
+}
+
+#driveTable {
+  margin: 0;        /* remove default margin */
+}
+
+#driveTable td {
+  text-align: left; /* ensure cells align left */
+  padding: 8px 12px;
+}

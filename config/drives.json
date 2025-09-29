@@ -1,0 +1,7 @@
+{
+  "drives": [
+    { "letter": "D:", "path": "D:\\" },
+    { "letter": "E:", "path": "E:\\" },
+    { "letter": "F:", "path": "F:\\" }
+  ]
+}
