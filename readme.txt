@@ -51,13 +51,6 @@ E.g., Delete = Del, Rename = F2, Upload = Ctrl+U.
 but keep a note all are done one by one, if one succeed then start next one.
 
 
-current project structure-
-
-Electron-
-/package.json
-/main.js
-
-
 Backend API-
 /backend-app/config/drives.json
 /backend-app/public/index.html
@@ -80,3 +73,6 @@ Frontend-
 /frontend-app/src/App.jsx
 /frontend-app/src/index.css
 /frontend-app/src/main.jsx
+
+project/frontend-app/(using vite and react app, build to dist and import to backend-app)
+project/backend-app/express js
