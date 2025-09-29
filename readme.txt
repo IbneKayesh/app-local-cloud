@@ -49,3 +49,34 @@ E.g., Delete = Del, Rename = F2, Upload = Ctrl+U.
 
 
 but keep a note all are done one by one, if one succeed then start next one.
+
+
+current project structure-
+
+Electron-
+/package.json
+/main.js
+
+
+Backend API-
+/backend-app/config/drives.json
+/backend-app/public/index.html
+/backend-app/public/style.css
+/backend-app/public/app.js
+/backend-app/routes/files.js
+/backend-app/routes/search.js
+/backend-app/routes/upload.js
+/backend-app/app.js
+/backend-app/package.json
+
+Frontend-
+/frontend-app/vite.config.js
+/frontend-app/package.json
+/frontend-app/index.html
+/frontend-app/eslint.config.json
+/frontend-app/public/vite.svg
+/frontend-app/src/assets/react.svg
+/frontend-app/src/App.css
+/frontend-app/src/App.jsx
+/frontend-app/src/index.css
+/frontend-app/src/main.jsx

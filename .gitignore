@@ -1,2 +1,5 @@
 /node_modules/
-/app_old/node_modules/
+/backend-app/node_modules/
+/backend-app/app_old/node_modules/
+/backend-app/app_old_v2/node_modules/
+/frontend-app/node_modules/

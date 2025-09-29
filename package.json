@@ -1,7 +1,26 @@
 {
-  "dependencies": {
-    "archiver": "^7.0.1",
-    "express": "^5.1.0",
-    "multer": "^2.0.2"
+  "name": "file-explorer-app",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build-react": "cd frontend-app && npm run build",
+    "dist": "npm run build-react && electron-builder"
+  },
+  "build": {
+    "appId": "com.example.fileexplorer",
+    "files": [
+      "backend-app/**/*",
+      "frontend-app/build/**/*",
+      "main.js",
+      "package.json"
+    ],
+    "win": { "target": "nsis" },
+    "mac": { "target": "dmg" },
+    "linux": { "target": "AppImage" }
+  },
+  "devDependencies": {
+    "electron": "^29.0.0",
+    "electron-builder": "^24.0.0"
   }
 }

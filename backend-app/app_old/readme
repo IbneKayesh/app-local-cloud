@@ -1,0 +1,11 @@
+1 UI : I home page, user will see all drives
+2 UI : No auth/user login required
+3 UI : drive list will come from config/drives.json file
+4 UI: When user click any drive then show list of contents of selectd drive
+5 UI: User can click file to download this file
+6 UI: Click folder to navigate folder, also user may download folder instead of default navigate (use zip)
+7 UI: Show the current path on top bar (dont show default UI of serve-index)
+8 UI: Show upload button (want to upload currrent path insted of uploads folder)
+
+
+use public folder to make index.html and required html and css files

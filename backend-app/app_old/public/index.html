@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>LAN File Server</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>📂 LAN File Server</h1>
+      <div id="breadcrumbs"></div>
+    </header>
+    <main>
+      <section id="driveSection">
+        <h2>Drives</h2>
+        <div id="driveList" class="cards"></div>
+      </section>
+
+      <section id="fileSection" style="display: none">
+        <h2>Contents</h2>
+        <div id="fileList" class="cards"></div>
+      </section>
+
+      <section id="uploadSection" style="display: none">
+        <h3>Upload File to Current Folder</h3>
+        <input type="file" id="fileInput" />
+        <button id="uploadBtn">Upload</button>
+      </section>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>
