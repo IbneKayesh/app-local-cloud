@@ -2,15 +2,20 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>LAN File Server</title>
+    <title>LAN Cloud</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <header>
-      <div class="header-left">📂 <span id="breadcrumbs"></span></div>
-      <div class="header-right">
+    <header class="flex-space-between" style="margin-bottom: 15px">
+      <div class="header-left flex">
+        📂
+        <span id="breadcrumbs" style="margin-left: 8px"></span>
+      </div>
+      <div class="header-right flex">
         <button id="openCreateFolderBtn">+ Create Folder</button>
-        <button id="openUploadBtn">⬆ Upload File</button>
+        <button id="openUploadBtn" style="margin-left: 8px">
+          ⬆ Upload File
+        </button>
       </div>
     </header>
 
@@ -27,18 +32,28 @@
       </section>
 
       <section id="fileSection" style="display: none">
+        <div id="searchBar">
+          <input type="text" id="searchInput" placeholder="Search files..." />
+          <button id="searchBtn">Search</button>
+          <button id="clearSearchBtn" style="display: none">Clear</button>
+        </div>
+
         <table id="fileTable">
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Size</th>
-              <th>Last Modified</th>
+              <th data-sort="name">Name ⬍</th>
+              <th data-sort="size">Size ⬍</th>
+              <th data-sort="mtime">Modified ⬍</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody></tbody>
         </table>
       </section>
+
+      <div id="recentSection" class="recent-folders">
+        <h4>Recent Folders:</h4>
+      </div>
     </main>
 
     <!-- Create Folder Modal -->

@@ -1,15 +1,19 @@
 let currentPath = "";
+let recentFolders = [];
+let lastFileItems = [];
+let currentSort = { field: null, ascending: true };
+
 const driveSection = document.getElementById("driveSection");
 const fileSection = document.getElementById("fileSection");
 const breadcrumbsEl = document.getElementById("breadcrumbs");
+const recentSection = document.getElementById("recentSection");
 
 const driveTableBody = document.querySelector("#driveTable tbody");
 const fileTableBody = document.querySelector("#fileTable tbody");
 
 // ----------------- Helper Functions -----------------
-
 function joinPath(base, folder) {
-  base = base.replace(/[\\\/]+$/, ""); // remove trailing slash
+  base = base.replace(/[\\\/]+$/, "");
   return `${base}\\${folder}`;
 }
 
@@ -21,8 +25,105 @@ function formatBytes(bytes) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 }
 
-// ----------------- Load Drives -----------------
+// ----------------- File Row Renderer -----------------
+function renderFileRow(item, path) {
+  const tr = document.createElement("tr");
 
+  // Name
+  const nameTd = document.createElement("td");
+  nameTd.textContent = (item.isDirectory ? "📁 " : "📄 ") + item.name;
+  nameTd.style.cursor = "pointer";
+  if (item.isDirectory) {
+    nameTd.onclick = () => loadPath(joinPath(path, item.name));
+  } else {
+    nameTd.onclick = () =>
+      window.open(
+        `/api/files/download?path=${encodeURIComponent(
+          joinPath(path, item.name)
+        )}`,
+        "_blank"
+      );
+  }
+  tr.appendChild(nameTd);
+
+  // Size
+  const sizeTd = document.createElement("td");
+  sizeTd.textContent = item.isDirectory ? "-" : formatBytes(item.size);
+  tr.appendChild(sizeTd);
+
+  // Last Modified
+  const dateTd = document.createElement("td");
+  dateTd.textContent = item.mtime ? new Date(item.mtime).toLocaleString() : "-";
+  tr.appendChild(dateTd);
+
+  // Actions
+  const actionTd = document.createElement("td");
+
+  // Download button
+  const btnDownload = document.createElement("button");
+  btnDownload.textContent = "⬇ Download";
+  btnDownload.onclick = (e) => {
+    e.stopPropagation();
+    const url = item.isDirectory
+      ? `/api/files/download-folder?path=${encodeURIComponent(
+          joinPath(path, item.name)
+        )}`
+      : `/api/files/download?path=${encodeURIComponent(
+          joinPath(path, item.name)
+        )}`;
+    window.open(url, "_blank");
+  };
+  actionTd.appendChild(btnDownload);
+
+  // Rename button
+  const btnRename = document.createElement("button");
+  btnRename.textContent = "✏ Rename";
+  btnRename.onclick = (e) => {
+    e.stopPropagation();
+    const newName = prompt("Enter new name:", item.name);
+    if (!newName || newName === item.name) return;
+    fetch("/api/files/rename", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        path: joinPath(path, item.name),
+        newName,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) renderFileTable(lastFileItems);
+        else alert("Rename failed: " + data.message);
+      })
+      .catch(() => alert("Rename failed"));
+  };
+  actionTd.appendChild(btnRename);
+
+  // Delete button
+  const btnDelete = document.createElement("button");
+  btnDelete.textContent = "🗑 Delete";
+  btnDelete.onclick = (e) => {
+    e.stopPropagation();
+    if (!confirm(`Are you sure you want to delete "${item.name}"?`)) return;
+    fetch("/api/files/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ path: joinPath(path, item.name) }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) loadPath(path);
+        else alert("Delete failed: " + data.message);
+      })
+      .catch(() => alert("Delete failed"));
+  };
+  actionTd.appendChild(btnDelete);
+
+  tr.appendChild(actionTd);
+  fileTableBody.appendChild(tr);
+}
+
+// ----------------- Load Drives -----------------
 fetch("/api/files/drives")
   .then((res) => res.json())
   .then((drives) => {
@@ -39,11 +140,10 @@ fetch("/api/files/drives")
   });
 
 // ----------------- Load Folder Contents -----------------
-
 function loadPath(path) {
-  console.log("path", path);
   currentPath = path;
   updateBreadcrumbs(path);
+  addRecentFolder(path);
 
   driveSection.style.display = "none";
   fileSection.style.display = "block";
@@ -51,111 +151,8 @@ function loadPath(path) {
   fetch(`/api/files/list?path=${encodeURIComponent(path)}`)
     .then((res) => res.json())
     .then((data) => {
-      fileTableBody.innerHTML = "";
-      data.items.forEach((item) => {
-        const tr = document.createElement("tr");
-
-        // Name
-        const nameTd = document.createElement("td");
-        nameTd.textContent = (item.isDirectory ? "📁 " : "📄 ") + item.name;
-        nameTd.style.cursor = "pointer";
-        if (item.isDirectory) {
-          nameTd.onclick = () => loadPath(joinPath(path, item.name));
-        } else {
-          nameTd.onclick = () =>
-            window.open(
-              `/api/files/download?path=${encodeURIComponent(joinPath(path, item.name))}`,
-              "_blank"
-            );
-        }
-        tr.appendChild(nameTd);
-
-        // Size
-        const sizeTd = document.createElement("td");
-        sizeTd.textContent = item.isDirectory ? "-" : formatBytes(item.size);
-        tr.appendChild(sizeTd);
-
-        // Last Modified
-        const dateTd = document.createElement("td");
-        dateTd.textContent = item.mtime ? new Date(item.mtime).toLocaleString() : "-";
-        tr.appendChild(dateTd);
-
-        // Actions
-        const actionTd = document.createElement("td");
-
-        // Download
-        const btnDownload = document.createElement("button");
-        btnDownload.textContent = item.isDirectory ? "⬇ Folder" : "⬇ File";
-        btnDownload.onclick = (e) => {
-          e.stopPropagation();
-          window.open(
-            `/api/files/download?path=${encodeURIComponent(joinPath(path, item.name))}`,
-            "_blank"
-          );
-        };
-        actionTd.appendChild(btnDownload);
-
-        // ZIP folder
-        if (item.isDirectory) {
-          const btnZip = document.createElement("button");
-          btnZip.textContent = "🗜 ZIP Folder";
-          btnZip.onclick = (e) => {
-            e.stopPropagation();
-            window.open(
-              `/api/files/download-folder?path=${encodeURIComponent(joinPath(path, item.name))}`,
-              "_blank"
-            );
-          };
-          actionTd.appendChild(btnZip);
-        }
-
-        // Rename
-        const btnRename = document.createElement("button");
-        btnRename.textContent = "✏ Rename";
-        btnRename.onclick = (e) => {
-          e.stopPropagation();
-          const newName = prompt("Enter new name:", item.name);
-          if (!newName || newName === item.name) return;
-          fetch("/api/files/rename", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              path: joinPath(path, item.name),
-              newName,
-            }),
-          })
-            .then((res) => res.json())
-            .then((data) => {
-              if (data.success) loadPath(path);
-              else alert("Rename failed: " + data.message);
-            })
-            .catch(() => alert("Rename failed"));
-        };
-        actionTd.appendChild(btnRename);
-
-        // Delete
-        const btnDelete = document.createElement("button");
-        btnDelete.textContent = "🗑 Delete";
-        btnDelete.onclick = (e) => {
-          e.stopPropagation();
-          if (!confirm(`Are you sure you want to delete "${item.name}"?`)) return;
-          fetch("/api/files/delete", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ path: joinPath(path, item.name) }),
-          })
-            .then((res) => res.json())
-            .then((data) => {
-              if (data.success) loadPath(path);
-              else alert("Delete failed: " + data.message);
-            })
-            .catch(() => alert("Delete failed"));
-        };
-        actionTd.appendChild(btnDelete);
-
-        tr.appendChild(actionTd);
-        fileTableBody.appendChild(tr);
-      });
+      lastFileItems = data.items;
+      renderFileTable(data.items);
     })
     .catch((err) => {
       console.error(err);
@@ -164,7 +161,6 @@ function loadPath(path) {
 }
 
 // ----------------- Breadcrumbs -----------------
-
 function updateBreadcrumbs(path) {
   breadcrumbsEl.innerHTML = "";
   breadcrumbsEl.style.display = "flex";
@@ -172,7 +168,7 @@ function updateBreadcrumbs(path) {
   breadcrumbsEl.style.whiteSpace = "nowrap";
 
   const homeSpan = document.createElement("span");
-  homeSpan.textContent = "Home";
+  homeSpan.textContent = "Drive";
   homeSpan.className = "breadcrumb-link";
   homeSpan.onclick = () => {
     driveSection.style.display = "block";
@@ -202,7 +198,106 @@ function updateBreadcrumbs(path) {
   });
 }
 
-// ----------------- Create Folder Modal -----------------
+// ----------------- Recent Folders -----------------
+function addRecentFolder(path) {
+  recentFolders = recentFolders.filter((p) => p !== path);
+  recentFolders.unshift(path);
+  if (recentFolders.length > 15) recentFolders.pop();
+  renderRecentFolders();
+}
+
+function renderRecentFolders() {
+  if (!recentSection) return;
+  recentSection.innerHTML = "";
+
+  recentFolders.forEach((path) => {
+    const btn = document.createElement("button");
+    btn.textContent = path.split(/\\|\//).pop() || path;
+    btn.title = path;
+    btn.onclick = () => loadPath(path);
+    recentSection.appendChild(btn);
+  });
+}
+
+// ----------------- Sorting -----------------
+document.querySelectorAll("#fileTable th[data-sort]").forEach((th) => {
+  th.style.cursor = "pointer";
+  th.onclick = () => {
+    const field = th.getAttribute("data-sort");
+    if (currentSort.field === field) currentSort.ascending = !currentSort.ascending;
+    else {
+      currentSort.field = field;
+      currentSort.ascending = true;
+    }
+    renderFileTable(lastFileItems);
+    updateSortIndicators();
+  };
+});
+
+function renderFileTable(items) {
+  let sortedItems = [...items];
+
+  if (currentSort.field) {
+    sortedItems.sort((a, b) => {
+      let valA = a[currentSort.field];
+      let valB = b[currentSort.field];
+
+      if (currentSort.field === "name") {
+        valA = a.isDirectory ? "0_" + valA.toLowerCase() : "1_" + valA.toLowerCase();
+        valB = b.isDirectory ? "0_" + valB.toLowerCase() : "1_" + valB.toLowerCase();
+      }
+
+      if (valA < valB) return currentSort.ascending ? -1 : 1;
+      if (valA > valB) return currentSort.ascending ? 1 : -1;
+      return 0;
+    });
+  }
+
+  fileTableBody.innerHTML = "";
+  sortedItems.forEach((item) => renderFileRow(item, currentPath));
+}
+
+function updateSortIndicators() {
+  document.querySelectorAll("#fileTable th[data-sort]").forEach((th) => {
+    const field = th.getAttribute("data-sort");
+    th.textContent = th.textContent.replace(/⬆|⬇/g, "");
+    if (field === currentSort.field) th.textContent += currentSort.ascending ? " ⬆" : " ⬇";
+  });
+}
+
+// ----------------- Search -----------------
+const searchInput = document.getElementById("searchInput");
+const searchBtn = document.getElementById("searchBtn");
+const clearSearchBtn = document.getElementById("clearSearchBtn");
+
+searchBtn.onclick = () => {
+  const query = searchInput.value.trim();
+  if (!query) return alert("Enter a search term!");
+  if (!currentPath) return alert("Select a drive or folder first!");
+
+  fileTableBody.innerHTML = "<tr><td colspan='4'>Searching ...</td></tr>";
+
+  fetch(`/api/files/search?path=${encodeURIComponent(currentPath)}&query=${encodeURIComponent(query)}`)
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.success) {
+        lastFileItems = data.items;
+        renderFileTable(data.items);
+        clearSearchBtn.style.display = "inline-block";
+      } else {
+        alert("Search failed: " + data.message);
+      }
+    })
+    .catch(() => alert("Error searching files"));
+};
+
+clearSearchBtn.onclick = () => {
+  searchInput.value = "";
+  clearSearchBtn.style.display = "none";
+  loadPath(currentPath);
+};
+
+// ----------------- Modals (Create Folder & Upload) -----------------
 const createFolderModal = document.getElementById("createFolderModal");
 const openCreateFolderBtn = document.getElementById("openCreateFolderBtn");
 const cancelCreateFolderBtn = document.getElementById("cancelCreateFolderBtn");
@@ -241,12 +336,6 @@ confirmCreateFolderBtn.onclick = () => {
     .catch(() => alert("Error creating folder"));
 };
 
-// Close modal on outside click
-window.onclick = (event) => {
-  if (event.target === createFolderModal) createFolderModal.style.display = "none";
-};
-
-// ----------------- Upload File Modal -----------------
 const uploadModal = document.getElementById("uploadModal");
 const openUploadBtn = document.getElementById("openUploadBtn");
 const cancelUploadBtn = document.getElementById("cancelUploadBtn");
@@ -272,22 +361,21 @@ confirmUploadBtn.onclick = () => {
 
   fetch(`/api/files/upload?currentPath=${encodeURIComponent(currentPath)}`, {
     method: "POST",
-    body: formData
+    body: formData,
   })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      loadPath(currentPath);
-      uploadModal.style.display = "none";
-    } else {
-      alert("Upload failed: " + data.message);
-    }
-  })
-  .catch(() => alert("Error uploading file"));
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.success) {
+        loadPath(currentPath);
+        uploadModal.style.display = "none";
+      } else {
+        alert("Upload failed: " + data.message);
+      }
+    })
+    .catch(() => alert("Error uploading file"));
 };
 
-
-// Close upload modal on outside click
 window.onclick = (event) => {
+  if (event.target === createFolderModal) createFolderModal.style.display = "none";
   if (event.target === uploadModal) uploadModal.style.display = "none";
 };
