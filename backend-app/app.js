@@ -22,12 +22,12 @@ app.use(cors({
   optionsSuccessStatus: 204
 }));
 
+// Middleware
+app.use(express.json());
+
 // Routes
 const fileSystemRoutes = require("./routes/fileSystem")();
 app.use("/api/filesystem", fileSystemRoutes);
-
-// Middleware
-app.use(express.json());
 
 // Serve React build
 app.use(express.static(path.join(__dirname, "dist")));

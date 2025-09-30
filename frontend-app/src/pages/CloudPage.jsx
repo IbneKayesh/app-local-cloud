@@ -4,6 +4,8 @@ import { Column } from "primereact/column";
 import { InputIcon } from "primereact/inputicon";
 import { BreadCrumb } from "primereact/breadcrumb";
 import { SplitButton } from "primereact/splitbutton";
+import { Dialog } from "primereact/dialog";
+import { InputText } from "primereact/inputtext";
 
 //internal imports
 import useCloud from "@/hooks/useCloud";
@@ -20,6 +22,20 @@ const CloudPage = () => {
     breadCrumbItems,
     recentContents,
     onBtnItemDownloadClick,
+    //rename
+    handleRenameDlgClick,
+    renameDlg,
+    setRenameDlg,
+    renameFromData,
+    setRenameFromData,
+    handleRenameBtnClick,
+
+    //delete
+    handleDeleteDlgClick,
+    deleteDlg,
+    setDeleteDlg,
+    deleteFromData,
+    handleDeleteBtnClick,
   } = useCloud();
 
   //console.log("drives " + JSON.stringify(drives));
@@ -54,15 +70,18 @@ const CloudPage = () => {
       {
         label: "Rename",
         icon: "pi pi-pencil",
-        command: () => {},
+        command: () => {
+          handleRenameDlgClick(rowData);
+        },
       },
-    ];
-    //assign to user only master item and un assigned items
+    ]; //assign to user only master item and un assigned items
 
     menuItems.push({
       label: "Delete",
       icon: "pi pi-trash",
-      command: () => {},
+      command: () => {
+        handleDeleteDlgClick(rowData);
+      },
     });
 
     //console.log("rowData", rowData);
@@ -131,6 +150,7 @@ const CloudPage = () => {
         onRowClick={(e) => {
           handleItemRowClick(e);
         }}
+        size="small"
       >
         <Column field="name" header="Name" body={name_body} sortable></Column>
         <Column field="size" header="Size" body={size_body} sortable></Column>
@@ -142,6 +162,69 @@ const CloudPage = () => {
         ></Column>
         <Column header="#" body={actionTemplate}></Column>
       </DataTable>
+
+      <Dialog
+        header="Rename ?"
+        visible={renameDlg}
+        style={{ width: "20vw" }}
+        onHide={() => {
+          if (!renameDlg) return;
+          setRenameDlg(false);
+        }}
+        position={"top"}
+      >
+        <div className="card">
+          <div className="flex flex-wrap align-items-center mb-3 gap-2">
+            <InputText
+              value={renameFromData.newName}
+              onChange={(e) =>
+                setRenameFromData({
+                  ...renameFromData,
+                  newName: e.target.value,
+                })
+              }
+              placeholder="Enter name"
+              className="w-full"
+              autoComplete="false"
+            />
+          </div>
+          <div className="flex flex-wrap align-items-right gap-2">
+            <Button
+              label="Done"
+              severity="primary"
+              icon="pi pi-check"
+              style={{ marginLeft: "0.5rem" }}
+              onClick={handleRenameBtnClick}
+            />
+          </div>
+        </div>
+      </Dialog>
+
+      <Dialog
+        header="Are you sure you want to delete ?"
+        visible={deleteDlg}
+        style={{ width: "25vw" }}
+        onHide={() => {
+          if (!deleteDlg) return;
+          setDeleteDlg(false);
+        }}
+      >
+        <div className="card">
+          <div className="flex flex-wrap align-items-center mb-3 gap-2">
+            {deleteFromData.isDirectory ? "Folder " : "File "}
+            {(deleteFromData.isDirectory ? "📁 " : "📄 ") + deleteFromData.name}
+          </div>
+          <div className="flex flex-wrap align-items-right gap-2">
+            <Button
+              label="Done"
+              severity="danger"
+              icon="pi pi-check"
+              style={{ marginLeft: "0.5rem" }}
+              onClick={handleDeleteBtnClick}
+            />
+          </div>
+        </div>
+      </Dialog>
     </>
   );
 };

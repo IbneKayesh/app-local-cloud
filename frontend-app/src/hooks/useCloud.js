@@ -16,6 +16,13 @@ const useCloud = () => {
 
   const [recentContents, setRecentContents] = useState([]);
 
+  const [renameDlg, setRenameDlg] = useState(false);
+  const [renameFromData, setRenameFromData] = useState({});
+  const [renameItem, setRenameItem] = useState(null);
+
+  const [deleteDlg, setDeleteDlg] = useState(false);
+  const [deleteFromData, setDeleteFromData] = useState({});
+
   useEffect(() => {
     getApiBaseUrl().then(setBaseUrl);
   }, []);
@@ -160,6 +167,12 @@ const useCloud = () => {
     if (e.data.isDirectory) {
       loadPath(selectedPath);
     }
+    //  else {
+    //   const url = `${baseUrl}/filesystem/download?path=${encodeURIComponent(
+    //     `${currentPath}\\${e.data.name}`
+    //   )}`;
+    //   window.open(url, "_blank");
+    // }
   };
 
   const handleBtnRecentBtnClick = (e) => {
@@ -167,11 +180,98 @@ const useCloud = () => {
   };
 
   const onBtnItemDownloadClick = (rowData) => {
-    console.log("rowData " + JSON.stringify(rowData));
+    //console.log("rowData " + JSON.stringify(rowData));
+    //const selectedPath = `${currentPath}\\${rowData.name}`;
+    //console.log("selectedPath " + selectedPath);
 
-    const selectedPath = `${currentPath}\\${rowData.name}`;
+    const url = rowData.isDirectory
+      ? `${baseUrl}/filesystem/download-folder?path=${encodeURIComponent(
+          `${currentPath}\\${rowData.name}`
+        )}`
+      : `${baseUrl}/filesystem/download?path=${encodeURIComponent(
+          `${currentPath}\\${rowData.name}`
+        )}`;
+    window.open(url, "_blank");
+  };
 
-    console.log("selectedPath " + selectedPath);
+  const handleRenameDlgClick = (rowData) => {
+    //console.log("rowData " + JSON.stringify(rowData));
+    setRenameDlg(true);
+    setRenameItem(rowData);
+    setRenameFromData({ newName: rowData.name });
+    //`${currentPath}\\${rowData.name}`
+  };
+
+  const handleRenameBtnClick = async () => {
+    //console.log("test");
+
+    if (!renameFromData.newName || renameFromData.newName === renameItem.name)
+      return;
+
+    //console.log("test1");
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`${baseUrl}/filesystem/rename`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          path: `${currentPath}\\${renameItem.name}`,
+          newName: renameFromData.newName,
+        }),
+      });
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      const data = await res.json();
+      if (data.success) {
+        setRenameDlg(false);
+        loadPath(currentPath); // Refresh the current path
+      } else {
+        setError("Rename failed: " + data.message);
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteDlgClick = (rowData) => {
+    //console.log("rowData " + JSON.stringify(rowData));
+    setDeleteDlg(true);
+    setDeleteFromData(rowData);
+  };
+
+  const handleDeleteBtnClick = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`${baseUrl}/filesystem/delete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          path: `${currentPath}\\${deleteFromData.name}`,
+        }),
+      });
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      const data = await res.json();
+      if (data.success) {
+        setDeleteDlg(false);
+        loadPath(currentPath); // Refresh the current path
+      } else {
+        setError("Rename failed: " + data.message);
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return {
@@ -188,6 +288,21 @@ const useCloud = () => {
     breadCrumbItems,
     recentContents,
     onBtnItemDownloadClick,
+
+    //rename
+    handleRenameDlgClick,
+    renameDlg,
+    setRenameDlg,
+    renameFromData,
+    setRenameFromData,
+    handleRenameBtnClick,
+
+    //delete
+    handleDeleteDlgClick,
+    deleteDlg,
+    setDeleteDlg,
+    deleteFromData,
+    handleDeleteBtnClick,
   };
 };
 export default useCloud;
