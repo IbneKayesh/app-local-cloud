@@ -39,6 +39,7 @@ module.exports = () => {
             isDirectory: stats.isDirectory(),
             size: stats.size,
             mtime: stats.mtime,
+            path:fullPath,
           };
         });
 
