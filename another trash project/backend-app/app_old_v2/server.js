@@ -61,7 +61,6 @@ app.get("/api/files/download-folder", (req, res) => {
 });
 
 app.use("/api/files", searchRoutes);
-
 // Start server
 app.listen(PORT, () => {
   console.log(`✅ LAN File Server running at http://localhost:${PORT}`);

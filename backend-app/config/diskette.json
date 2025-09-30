@@ -1,0 +1,11 @@
+{
+  "drives": [
+    { "letter": "D:", "path": "D:\\" },
+    { "letter": "E:", "path": "E:\\" },
+    { "letter": "F:", "path": "F:\\" }
+  ],
+  "hidden": [
+    { "name": "System Volume Information" },
+    { "name": "$RECYCLE.BIN" }
+  ]
+}
