@@ -6,6 +6,8 @@ import { BreadCrumb } from "primereact/breadcrumb";
 import { SplitButton } from "primereact/splitbutton";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
+import { FileUpload } from "primereact/fileupload";
+import { ProgressBar } from "primereact/progressbar";
 
 //internal imports
 import useCloud from "@/hooks/useCloud";
@@ -36,6 +38,20 @@ const CloudPage = () => {
     setDeleteDlg,
     deleteFromData,
     handleDeleteBtnClick,
+
+    //new folder
+    handleNewFolderDlgClick,
+    newFolderDlg,
+    setNewFolderDlg,
+    newFolderFromData,
+    setNewFolderFromData,
+    handleNewFolderBtnClick,
+
+    //uploader
+    handleUploaderDlgClick,
+    uploaderDlg,
+    setUploaderDlg,
+    handleUploaderBtnClick,
   } = useCloud();
 
   //console.log("drives " + JSON.stringify(drives));
@@ -98,6 +114,10 @@ const CloudPage = () => {
     );
   };
 
+  const onUpload = (event) => {
+    console.log("Upload complete:", event.files);
+  };
+
   return (
     <>
       {drives.map((d) => (
@@ -112,21 +132,21 @@ const CloudPage = () => {
         />
       ))}
       <Button
-        label={"Upload"}
+        label="Upload"
         severity="primary"
         icon="pi pi-upload"
         style={{ margin: "0.5rem" }}
         onClick={(e) => {
-          handleDriveBtnClick(e);
+          handleUploaderDlgClick(e);
         }}
       />
       <Button
-        label={"Create new Folder"}
+        label="Create new Folder"
         severity="primary"
         icon="pi pi-plus"
         style={{ margin: "0.5rem" }}
         onClick={(e) => {
-          handleDriveBtnClick(e);
+          handleNewFolderDlgClick(e);
         }}
       />
       <br />
@@ -223,6 +243,79 @@ const CloudPage = () => {
               onClick={handleDeleteBtnClick}
             />
           </div>
+        </div>
+      </Dialog>
+
+      <Dialog
+        header="Create new Folder"
+        visible={newFolderDlg}
+        style={{ width: "20vw" }}
+        onHide={() => {
+          if (!newFolderDlg) return;
+          setNewFolderDlg(false);
+        }}
+        position={"top"}
+      >
+        <div className="card">
+          <div className="flex flex-wrap align-items-center mb-3 gap-2">
+            <InputText
+              value={newFolderFromData.name}
+              onChange={(e) =>
+                setNewFolderFromData({
+                  ...newFolderFromData,
+                  name: e.target.value,
+                })
+              }
+              placeholder="Enter folder name"
+              className="w-full"
+              autoComplete="false"
+            />
+          </div>
+          <div className="flex flex-wrap align-items-right gap-2">
+            <Button
+              label="Done"
+              severity="primary"
+              icon="pi pi-check"
+              style={{ marginLeft: "0.5rem" }}
+              onClick={handleNewFolderBtnClick}
+            />
+          </div>
+        </div>
+      </Dialog>
+
+      <Dialog
+        header="Upload"
+        visible={uploaderDlg}
+        style={{ width: "30vw" }}
+        onHide={() => {
+          if (!uploaderDlg) return;
+          setUploaderDlg(false);
+        }}
+        position={"top"}
+      >
+        <div className="card">
+          {/* <FileUpload
+            name="demo[]"
+            url={"/api/upload"}
+            multiple
+            accept="*"
+            maxFileSize={100000000}
+            emptyTemplate={
+              <p className="m-0">Drag and drop files to here to upload.</p>
+            }
+          /> */}
+
+          <FileUpload
+            name="file"
+            customUpload
+            uploadHandler={(event) => handleUploaderBtnClick(event.files)}
+            multiple={false}
+            //accept="application/pdf,image/*" // Accepts PDF and all image formats
+            maxFileSize={5000000} // 5 MB (your comment says 1 MB, adjust either value or comment)
+            chooseLabel="Select File"
+            uploadLabel="Upload"
+            cancelLabel="Cancel"
+          />
         </div>
       </Dialog>
     </>

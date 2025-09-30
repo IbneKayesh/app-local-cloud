@@ -2,8 +2,9 @@ const express = require("express");
 const fs = require("fs");
 const path = require("path");
 const archiver = require("archiver");
+const multer = require("multer");
 
-module.exports = (upload) => {
+module.exports = () => {
   const router = express.Router();
 
   // --- drives list ---
@@ -93,8 +94,6 @@ module.exports = (upload) => {
 
   // --- Rename file/folder ---
   router.post("/rename", (req, res) => {
-
-
     //console.log("req.body" + JSON.stringify(req.body))
 
     const { path: oldPath, newName } = req.body;
@@ -148,5 +147,38 @@ module.exports = (upload) => {
       res.json({ success: false, message: err.message });
     }
   });
+
+  // --- Upload files / folders ---
+  // Multer setup
+  const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      const uploadPath = path.normalize(req.query.currentPath);
+      if (fs.existsSync(uploadPath) && !fs.statSync(uploadPath).isDirectory()) {
+        return cb(new Error("Path is not a directory"));
+      }
+      if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+      }
+      cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => cb(null, file.originalname),
+  });
+  const upload = multer({ storage });
+
+  // --- API setup---
+  router.post("/upload", upload.single("file"), (req, res) => {
+    const currentPath = req.body.currentPath;
+
+    // for (const [key, value] of req.body.entries()) {
+    //   console.log(key, value);
+    // }
+
+    if (!currentPath || !fs.existsSync(currentPath)) {
+      return res.status(400).json({ success: false, message: "Invalid path" });
+    }
+
+    res.json({ success: true, file: req.file });
+  });
+
   return router;
 };

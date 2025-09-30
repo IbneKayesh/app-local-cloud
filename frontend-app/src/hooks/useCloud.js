@@ -23,6 +23,11 @@ const useCloud = () => {
   const [deleteDlg, setDeleteDlg] = useState(false);
   const [deleteFromData, setDeleteFromData] = useState({});
 
+  const [newFolderDlg, setNewFolderDlg] = useState(false);
+  const [newFolderFromData, setNewFolderFromData] = useState({});
+
+  const [uploaderDlg, setUploaderDlg] = useState(false);
+
   useEffect(() => {
     getApiBaseUrl().then(setBaseUrl);
   }, []);
@@ -274,6 +279,83 @@ const useCloud = () => {
     }
   };
 
+  const handleNewFolderDlgClick = () => {
+    setNewFolderDlg(true);
+    setNewFolderFromData({});
+  };
+
+  const handleNewFolderBtnClick = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`${baseUrl}/filesystem/create-folder`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          path: `${currentPath}`,
+          name: `${newFolderFromData.name}`,
+        }),
+      });
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      const data = await res.json();
+      if (data.success) {
+        setNewFolderDlg(false);
+        loadPath(currentPath); // Refresh the current path
+      } else {
+        setError("Rename failed: " + data.message);
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUploaderDlgClick = () => {
+    setUploaderDlg(true);
+  };
+
+  const handleUploaderBtnClick = async (files) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", files[0]); // assuming single file
+
+      console.log("test");
+
+      const res = await fetch(
+        `${baseUrl}/filesystem/upload?currentPath=${encodeURIComponent(
+          currentPath
+        )}`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      console.log("test");
+
+      const data = await res.json();
+      if (data.success) {
+        setUploaderDlg(false);
+        loadPath(currentPath); // Refresh the current path
+      } else {
+        setError("Upload failed: " + data.message);
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     drives,
     loading,
@@ -303,6 +385,20 @@ const useCloud = () => {
     setDeleteDlg,
     deleteFromData,
     handleDeleteBtnClick,
+
+    //new folder
+    handleNewFolderDlgClick,
+    newFolderDlg,
+    setNewFolderDlg,
+    newFolderFromData,
+    setNewFolderFromData,
+    handleNewFolderBtnClick,
+
+    //uploader
+    handleUploaderDlgClick,
+    uploaderDlg,
+    setUploaderDlg,
+    handleUploaderBtnClick,
   };
 };
 export default useCloud;
