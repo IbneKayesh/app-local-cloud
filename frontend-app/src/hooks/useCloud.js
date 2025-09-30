@@ -317,16 +317,22 @@ const useCloud = () => {
   const handleUploaderDlgClick = () => {
     setUploaderDlg(true);
   };
-
+  
   const handleUploaderBtnClick = async (files) => {
     setLoading(true);
     setError(null);
+
+    if (!files || files.length === 0) {
+      setError("No file selected.");
+      setLoading(false);
+      return;
+    }
 
     try {
       const formData = new FormData();
       formData.append("file", files[0]); // assuming single file
 
-      console.log("test");
+      console.log("Uploading file to path:", currentPath);
 
       const res = await fetch(
         `${baseUrl}/filesystem/upload?currentPath=${encodeURIComponent(
@@ -337,12 +343,14 @@ const useCloud = () => {
           body: formData,
         }
       );
+
       if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
+        const errorResponse = await res.json();
+        throw new Error(`Upload failed: ${errorResponse.message}`);
       }
-      console.log("test");
 
       const data = await res.json();
+
       if (data.success) {
         setUploaderDlg(false);
         loadPath(currentPath); // Refresh the current path
@@ -357,9 +365,9 @@ const useCloud = () => {
   };
 
   return {
-    drives,
     loading,
     error,
+    drives,
     refetch: fetchDrives,
     handleDriveBtnClick,
     currentPathContents,

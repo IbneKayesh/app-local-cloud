@@ -15,6 +15,8 @@ import { formatBytes, formatLocalDateTime } from "@/utils/sanitize";
 
 const CloudPage = () => {
   const {
+    loading,
+    error,
     drives,
     handleDriveBtnClick,
     currentPathContents,
@@ -286,7 +288,7 @@ const CloudPage = () => {
       <Dialog
         header="Upload"
         visible={uploaderDlg}
-        style={{ width: "30vw" }}
+        style={{ width: "50vw" }}
         onHide={() => {
           if (!uploaderDlg) return;
           setUploaderDlg(false);
@@ -294,28 +296,24 @@ const CloudPage = () => {
         position={"top"}
       >
         <div className="card">
-          {/* <FileUpload
-            name="demo[]"
-            url={"/api/upload"}
-            multiple
-            accept="*"
-            maxFileSize={100000000}
-            emptyTemplate={
-              <p className="m-0">Drag and drop files to here to upload.</p>
-            }
-          /> */}
-
-          <FileUpload
-            name="file"
-            customUpload
-            uploadHandler={(event) => handleUploaderBtnClick(event.files)}
-            multiple={false}
-            //accept="application/pdf,image/*" // Accepts PDF and all image formats
-            maxFileSize={5000000} // 5 MB (your comment says 1 MB, adjust either value or comment)
-            chooseLabel="Select File"
-            uploadLabel="Upload"
-            cancelLabel="Cancel"
-          />
+          {loading ? (
+            "Uploading ...."
+          ) : (
+            <FileUpload
+              name="file"
+              customUpload
+              uploadHandler={(event) => handleUploaderBtnClick(event.files)}
+              multiple={false}
+              accept="*"
+              maxFileSize={100_000_0000} // 100 MB
+              chooseLabel="Select File"
+              uploadLabel="Upload"
+              cancelLabel="Cancel"
+              emptyTemplate={
+                <p className="m-0">Drag and drop files to here to upload.</p>
+              }
+            />
+          )}
         </div>
       </Dialog>
     </>

@@ -167,16 +167,25 @@ module.exports = () => {
 
   // --- API setup---
   router.post("/upload", upload.single("file"), (req, res) => {
-    const currentPath = req.body.currentPath;
+    const rawPath = req.query.currentPath;
+    const currentPath = path.normalize(rawPath);
 
-    // for (const [key, value] of req.body.entries()) {
-    //   console.log(key, value);
-    // }
+    console.log("Received upload for path:", currentPath);
 
+    // Validation
     if (!currentPath || !fs.existsSync(currentPath)) {
+      console.error("Invalid path:", currentPath);
       return res.status(400).json({ success: false, message: "Invalid path" });
     }
 
+    if (!req.file) {
+      console.error("No file uploaded.");
+      return res
+        .status(400)
+        .json({ success: false, message: "No file uploaded" });
+    }
+
+    // Save/move file if needed, currently it's stored in `uploads/`
     res.json({ success: true, file: req.file });
   });
 
