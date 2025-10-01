@@ -129,6 +129,26 @@ module.exports = () => {
     }
   });
 
+
+  // --- Move file/folder ---
+ router.post("/move", (req, res) => {
+  const { source, destination } = req.body;
+
+  if (!source || !destination) {
+    return res.status(400).json({ error: "Source and destination required" });
+  }
+
+  fs.rename(source, destination, (err) => {
+    if (err) {
+      console.error("Move failed:", err);
+      return res.status(500).json({ error: "Failed to move file/folder" });
+    }
+    res.json({ message: "Moved successfully" });
+  });
+});
+
+
+
   // --- Create new folder ---
   router.post("/create-folder", (req, res) => {
     const { path: parentPath, name } = req.body;
@@ -164,7 +184,7 @@ module.exports = () => {
     },
     filename: (req, file, cb) => cb(null, file.originalname),
   });
-  const upload = multer({ storage });
+  const upload = multer({ storage, limits: { fileSize: 20 * 1024 * 1024 * 1024 } }); // 20GB limit
 
   // --- API setup---
   router.post("/upload", upload.single("file"), (req, res) => {

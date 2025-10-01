@@ -9,3 +9,13 @@ export const formatBytes = (bytes) => {
 export const formatLocalDateTime = (datetime) => {
   return datetime ? new Date(datetime).toLocaleString() : "-";
 };
+
+export const getFileType = (name) => {
+  const ext = name.split('.').pop().toLowerCase();
+
+  if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext)) return "image";
+  if (["mp4", "webm", "mov"].includes(ext)) return "video";
+  if (["mp3", "wav", "ogg"].includes(ext)) return "audio";
+  if (ext === "pdf") return "pdf";
+  return "other";
+}

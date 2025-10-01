@@ -7,6 +7,9 @@ const app = express();
 const PORT = process.env.PORT || 8085;
 const HOST = "0.0.0.0";
 
+// Set server timeout for large file uploads (24 hours to handle very slow uploads)
+app.set('timeout', 24 * 60 * 60 * 1000);
+
 function getLocalIp() {
   const interfaces = os.networkInterfaces();
   for (const name of Object.keys(interfaces)) {
@@ -23,7 +26,7 @@ const localIp = getLocalIp();
 //CORS Origin
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(",")
-  : ["http://192.168.0.129:5173", "http://localhost:5173"];
+  : ["http://192.168.0.129:5173", "http://localhost:5173", localIp];
 app.use(
   cors({
     origin: function (origin, callback) {

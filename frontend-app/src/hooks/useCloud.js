@@ -28,6 +28,9 @@ const useCloud = () => {
 
   const [uploaderDlg, setUploaderDlg] = useState(false);
 
+  const [moveDlg, setMoveDlg] = useState(false);
+  const [moveFromData, setMoveFromData] = useState({});
+
   useEffect(() => {
     getApiBaseUrl().then(setBaseUrl);
   }, []);
@@ -317,7 +320,7 @@ const useCloud = () => {
   const handleUploaderDlgClick = () => {
     setUploaderDlg(true);
   };
-  
+
   const handleUploaderBtnClick = async (files) => {
     setLoading(true);
     setError(null);
@@ -352,10 +355,50 @@ const useCloud = () => {
       const data = await res.json();
 
       if (data.success) {
-        setUploaderDlg(false);
+        //setUploaderDlg(false);
         loadPath(currentPath); // Refresh the current path
       } else {
         setError("Upload failed: " + data.message);
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleMoveDlgClick = (rowData) => {
+    //console.log("rowData " + JSON.stringify(rowData));
+    setMoveDlg(true);
+    setMoveFromData(rowData);
+  };
+
+  const handleMoveBtnClick = async (rowData) => {
+    console.log("rowData " + JSON.stringify(rowData));
+
+    //return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`${baseUrl}/filesystem/move`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          source: moveFromData.path,
+          destination: `${rowData.path}/${moveFromData.name}`,
+        }),
+      });
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      const data = await res.json();
+      if (data.success) {
+        setMoveDlg(false);
+        loadPath(currentPath); // Refresh the current path
+      } else {
+        setError("Move failed: " + data.message);
       }
     } catch (err) {
       setError(err.message);
@@ -407,6 +450,13 @@ const useCloud = () => {
     uploaderDlg,
     setUploaderDlg,
     handleUploaderBtnClick,
+
+    //move
+    handleMoveDlgClick,
+    moveDlg,
+    setMoveDlg,
+    setMoveFromData,
+    handleMoveBtnClick,
   };
 };
 export default useCloud;

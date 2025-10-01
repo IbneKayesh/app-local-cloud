@@ -8,10 +8,18 @@ import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { FileUpload } from "primereact/fileupload";
 import { ProgressBar } from "primereact/progressbar";
+import { useState } from "react";
+import { Tree } from "primereact/tree";
 
 //internal imports
 import useCloud from "@/hooks/useCloud";
-import { formatBytes, formatLocalDateTime } from "@/utils/sanitize";
+import {
+  formatBytes,
+  formatLocalDateTime,
+  getFileType,
+} from "@/utils/sanitize";
+import FileUploaderComponent from "./FileUploaderComponent";
+import MoveComponent from "./MoveComponent";
 
 const CloudPage = () => {
   const {
@@ -54,12 +62,72 @@ const CloudPage = () => {
     uploaderDlg,
     setUploaderDlg,
     handleUploaderBtnClick,
+
+    //move
+    handleMoveDlgClick,
+    moveDlg,
+    setMoveDlg,
+    setMoveFromData,
+    handleMoveBtnClick,
   } = useCloud();
+
+  const [preview, setPreview] = useState(null);
 
   //console.log("drives " + JSON.stringify(drives));
 
   const name_body = (rowData) => {
+    const fileType = getFileType(rowData.name);
+
+    //console.log("fileType " + fileType);
+
+    //console.log("rowData " + JSON.stringify(rowData));
+
     return (rowData.isDirectory ? "📁 " : "📄 ") + rowData.name;
+  };
+
+  const previewBody = (rowData) => (
+    <Button
+      icon="pi pi-eye"
+      className="p-button-rounded p-button-text"
+      onClick={() => setPreview(rowData)}
+    />
+  );
+
+  const renderPreview = () => {
+    if (!preview) return null;
+
+    const type = getFileType(preview.name);
+
+    if (type === "image")
+      return (
+        <img
+          src={preview.path}
+          alt={preview.name}
+          style={{ maxWidth: "100%" }}
+        />
+      );
+    if (type === "video")
+      return (
+        <video
+          src={
+            "http://192.168.0.129:8085/api/filesystem/download?path=D%3A%5C%5CSamsung%20M14%5Cvideo_20250928_161221.mp4"
+          }
+          controls
+          style={{ maxWidth: "100%" }}
+        />
+      );
+    if (type === "audio") return <audio src={preview.path} controls />;
+    if (type === "pdf")
+      return (
+        <iframe
+          src={preview.path}
+          width="100%"
+          height="500px"
+          title={preview.name}
+        />
+      );
+
+    return <p>Preview not available</p>;
   };
 
   const name_body_new = (rowData) => {
@@ -93,6 +161,14 @@ const CloudPage = () => {
         },
       },
     ]; //assign to user only master item and un assigned items
+
+    menuItems.push({
+      label: "Move",
+      icon: "pi pi-arrows-alt",
+      command: () => {
+        handleMoveDlgClick(rowData);
+      },
+    });
 
     menuItems.push({
       label: "Delete",
@@ -182,7 +258,13 @@ const CloudPage = () => {
           body={mtime_body}
           sortable
         ></Column>
-        <Column header="#" body={actionTemplate}></Column>
+        <Column header="" body={actionTemplate}></Column>
+
+        <Column
+          body={previewBody}
+          header="Preview"
+          style={{ width: "100px" }}
+        />
       </DataTable>
 
       <Dialog
@@ -296,25 +378,51 @@ const CloudPage = () => {
         position={"top"}
       >
         <div className="card">
-          {loading ? (
-            "Uploading ...."
-          ) : (
-            <FileUpload
-              name="file"
-              customUpload
-              uploadHandler={(event) => handleUploaderBtnClick(event.files)}
-              multiple={false}
-              accept="*"
-              maxFileSize={100_000_0000} // 100 MB
-              chooseLabel="Select File"
-              uploadLabel="Upload"
-              cancelLabel="Cancel"
-              emptyTemplate={
-                <p className="m-0">Drag and drop files to here to upload.</p>
-              }
-            />
-          )}
+          <FileUpload
+            name="file"
+            customUpload
+            uploadHandler={(event) => handleUploaderBtnClick(event.files)}
+            multiple={false}
+            accept="*"
+            maxFileSize={5000 * 1024 * 1024} // 5000 MB
+            chooseLabel="Select File"
+            uploadLabel="Upload"
+            cancelLabel="Cancel"
+            emptyTemplate={
+              <p className="m-0">Drag and drop files to here to upload.</p>
+            }
+          />
+          {/* 
+            <FileUploaderComponent uploadUrl  currentPath loadPath/> */}
+
+          {loading && "Uploading ...."}
         </div>
+      </Dialog>
+
+      <Dialog
+        header={preview?.name}
+        visible={!!preview}
+        onHide={() => setPreview(null)}
+        style={{ width: "50vw" }}
+      >
+        {renderPreview()}
+      </Dialog>
+
+      <Dialog
+        header="Move to"
+        visible={moveDlg}
+        style={{ width: "50vw" }}
+        onHide={() => {
+          if (!moveDlg) return;
+          setMoveDlg(false);
+        }}
+        position={"top"}
+      >
+        <MoveComponent
+          moveDirs={recentContents}
+          handleItemRowClick={handleMoveBtnClick}
+          handleMoveBtnClick={handleMoveBtnClick}
+        />
       </Dialog>
     </>
   );
