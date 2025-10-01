@@ -418,7 +418,7 @@ const useCloud = () => {
   const handleBtnSetPreviewClick = (rowData) => {
     if (!rowData?.path) {
       console.error("Invalid file path for preview:", rowData);
-      setPreview(null)
+      setPreview(null);
       return;
     }
 
@@ -432,6 +432,8 @@ const useCloud = () => {
       url: previewUrl,
     });
   };
+
+  const handleSearchDlgClick = () => {};
 
   return {
     loading,
@@ -488,6 +490,9 @@ const useCloud = () => {
     //preview
     preview,
     handleBtnSetPreviewClick,
+
+    //search
+    handleSearchDlgClick,
   };
 };
 export default useCloud;

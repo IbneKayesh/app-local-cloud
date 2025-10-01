@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from "react";
 import { Button } from "primereact/button";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
@@ -76,7 +77,12 @@ const CloudPage = () => {
     //preview
     preview,
     handleBtnSetPreviewClick,
+
+    //search
+    handleSearchDlgClick,
   } = useCloud();
+
+  const abortControllerRef = useRef(null);
 
   //console.log("drives " + JSON.stringify(drives));
 
@@ -112,9 +118,58 @@ const CloudPage = () => {
           title={preview.name}
         />
       );
+    if (type === "svg")
+      return (
+        <img
+          src={preview.url}
+          alt={preview.name}
+          style={{ maxWidth: "100%" }}
+        />
+      );
+    if (type === "text")
+      return (
+        <pre
+          style={{
+            whiteSpace: "pre-wrap",
+            maxHeight: "500px",
+            overflow: "auto",
+            backgroundColor: "#f4f4f4",
+            padding: "1rem",
+            borderRadius: "4px",
+          }}
+        >
+          {preview.textContent || "Loading..."}
+        </pre>
+      );
 
     return <p>Preview not available</p>;
   };
+
+  useEffect(() => {
+    // Abort any ongoing fetch
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    if (preview && getFileType(preview.name) === "text") {
+      abortControllerRef.current = new AbortController();
+      fetch(preview.url, { signal: abortControllerRef.current.signal })
+        .then((res) => res.text())
+        .then((text) => {
+          preview.textContent = text;
+          // Force re-render by updating preview state
+          handleBtnSetPreviewClick({ ...preview });
+        })
+        .catch((err) => {
+          if (err.name !== "AbortError") {
+            preview.textContent = "Error loading text content";
+            handleBtnSetPreviewClick({ ...preview });
+          }
+        });
+    } else {
+      abortControllerRef.current = null;
+    }
+  }, [preview]);
 
   const size_body = (rowData) => {
     return rowData.isDirectory ? "-" : formatBytes(rowData.size);
@@ -185,6 +240,15 @@ const CloudPage = () => {
           }}
         />
       ))}
+      <Button
+        label="Search"
+        severity="primary"
+        icon="pi pi-search"
+        style={{ margin: "0.5rem" }}
+        onClick={(e) => {
+          handleSearchDlgClick(e);
+        }}
+      />
       <Button
         label="Upload"
         severity="primary"
