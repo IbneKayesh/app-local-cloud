@@ -374,7 +374,7 @@ const useCloud = () => {
   };
 
   const handleMoveBtnClick = async (rowData) => {
-    console.log("rowData " + JSON.stringify(rowData));
+    //console.log("rowData " + JSON.stringify(rowData));
 
     //return;
 
@@ -393,6 +393,7 @@ const useCloud = () => {
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
+      console.log("rowData " + JSON.stringify(rowData))
       const data = await res.json();
       if (data.success) {
         setMoveDlg(false);

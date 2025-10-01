@@ -39,7 +39,7 @@ module.exports = () => {
             isDirectory: stats.isDirectory(),
             size: stats.size,
             mtime: stats.mtime,
-            path:fullPath,
+            path: fullPath,
           };
         });
 
@@ -129,25 +129,43 @@ module.exports = () => {
     }
   });
 
-
   // --- Move file/folder ---
- router.post("/move", (req, res) => {
-  const { source, destination } = req.body;
+  router.post("/move", (req, res) => {
+    const { source, destination } = req.body;
 
-  if (!source || !destination) {
-    return res.status(400).json({ error: "Source and destination required" });
-  }
-
-  fs.rename(source, destination, (err) => {
-    if (err) {
-      console.error("Move failed:", err);
-      return res.status(500).json({ error: "Failed to move file/folder" });
+    if (!source || !destination) {
+      return res.status(400).json({ error: "Source and destination required" });
     }
-    res.json({ message: "Moved successfully" });
+
+    // Normalize path separators for Windows
+    const normalizedDestination = destination.replace(/\//g, "\\");
+
+    //console.log("normalizedDestination " + normalizedDestination);
+
+    // Check if source and destination are the same
+    if (source === normalizedDestination) {
+      return res.json({ success: true, message: "No move needed" });
+    }
+
+    // Check if source exists
+    if (!fs.existsSync(source)) {
+      return res.status(400).json({ error: "Source does not exist" });
+    }
+
+    // Check if destination directory is valid
+    const destDir = path.dirname(normalizedDestination);
+    if (!fs.existsSync(destDir) || !fs.statSync(destDir).isDirectory()) {
+      return res.status(400).json({ error: "Destination directory must be valid" });
+    }
+
+    fs.rename(source, normalizedDestination, (err) => {
+      if (err) {
+        console.error("Move failed:", err);
+        return res.status(500).json({ error: "Failed to move file/folder" });
+      }
+      res.json({ success: true, message: "Moved successfully" });
+    });
   });
-});
-
-
 
   // --- Create new folder ---
   router.post("/create-folder", (req, res) => {
@@ -184,7 +202,10 @@ module.exports = () => {
     },
     filename: (req, file, cb) => cb(null, file.originalname),
   });
-  const upload = multer({ storage, limits: { fileSize: 20 * 1024 * 1024 * 1024 } }); // 20GB limit
+  const upload = multer({
+    storage,
+    limits: { fileSize: 20 * 1024 * 1024 * 1024 },
+  }); // 20GB limit
 
   // --- API setup---
   router.post("/upload", upload.single("file"), (req, res) => {

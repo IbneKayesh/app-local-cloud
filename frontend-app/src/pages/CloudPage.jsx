@@ -408,22 +408,13 @@ const CloudPage = () => {
         {renderPreview()}
       </Dialog>
 
-      <Dialog
-        header="Move to"
-        visible={moveDlg}
-        style={{ width: "50vw" }}
-        onHide={() => {
-          if (!moveDlg) return;
-          setMoveDlg(false);
-        }}
-        position={"top"}
-      >
-        <MoveComponent
-          moveDirs={recentContents}
-          handleItemRowClick={handleMoveBtnClick}
-          handleMoveBtnClick={handleMoveBtnClick}
-        />
-      </Dialog>
+      <MoveComponent
+        moveDlg={moveDlg}
+        setMoveDlg={setMoveDlg}
+        moveDirs={recentContents}
+        handleItemRowClick={handleMoveBtnClick}
+        handleMoveBtnClick={handleMoveBtnClick}
+      />
     </>
   );
 };
