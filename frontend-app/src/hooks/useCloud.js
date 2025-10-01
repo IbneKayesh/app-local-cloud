@@ -2,6 +2,11 @@ import { useEffect } from "react";
 import { useState } from "react";
 import path from "path";
 import { getApiBaseUrl } from "../utils/api";
+import {
+  formatBytes,
+  formatLocalDateTime,
+  getFileType,
+} from "../utils/sanitize";
 
 const useCloud = () => {
   const [drives, setDrives] = useState([]);
@@ -30,6 +35,8 @@ const useCloud = () => {
 
   const [moveDlg, setMoveDlg] = useState(false);
   const [moveFromData, setMoveFromData] = useState({});
+
+  const [preview, setPreview] = useState(null);
 
   useEffect(() => {
     getApiBaseUrl().then(setBaseUrl);
@@ -393,7 +400,7 @@ const useCloud = () => {
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
-      console.log("rowData " + JSON.stringify(rowData))
+      console.log("rowData " + JSON.stringify(rowData));
       const data = await res.json();
       if (data.success) {
         setMoveDlg(false);
@@ -408,9 +415,28 @@ const useCloud = () => {
     }
   };
 
+  const handleBtnSetPreviewClick = (rowData) => {
+    if (!rowData?.path) {
+      console.error("Invalid file path for preview:", rowData);
+      setPreview(null)
+      return;
+    }
+
+    const previewUrl = `${baseUrl}/filesystem/preview?path=${encodeURIComponent(
+      rowData.path
+    )}`;
+
+    // ✅ Set preview with rowData + url
+    setPreview({
+      ...rowData,
+      url: previewUrl,
+    });
+  };
+
   return {
     loading,
     error,
+    baseUrl,
     drives,
     refetch: fetchDrives,
     handleDriveBtnClick,
@@ -458,6 +484,10 @@ const useCloud = () => {
     setMoveDlg,
     setMoveFromData,
     handleMoveBtnClick,
+
+    //preview
+    preview,
+    handleBtnSetPreviewClick,
   };
 };
 export default useCloud;

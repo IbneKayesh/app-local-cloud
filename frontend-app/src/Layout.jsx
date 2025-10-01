@@ -17,7 +17,7 @@ const Layout = ({ children, menuItems }) => {
         </div>
       </main>
       <footer style={{ textAlign: 'center', padding: '16px', backgroundColor: '#f5f5f5', borderTop: '1px solid #d9d9d9' }}>
-        PrimeReact ©{new Date().getFullYear()} Created with PrimeReact
+        Local Cloud ©{new Date().getFullYear()} Created with Sand Grain Digital
       </footer>
     </div>
   );

@@ -15,7 +15,7 @@ export const getFileType = (name) => {
 
   if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext)) return "image";
   if (["mp4", "webm", "mov"].includes(ext)) return "video";
-  if (["mp3", "wav", "ogg"].includes(ext)) return "audio";
+  if (["mp3", "wav", "ogg", "m4a"].includes(ext)) return "audio";
   if (ext === "pdf") return "pdf";
   return "other";
 }

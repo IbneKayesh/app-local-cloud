@@ -93,6 +93,20 @@ module.exports = () => {
     archive.finalize();
   });
 
+  // --- Preview file ---
+  router.get("/preview", (req, res) => {
+    const filePath = req.query.path;
+    if (
+      !filePath ||
+      !fs.existsSync(filePath) ||
+      fs.statSync(filePath).isDirectory()
+    ) {
+      return res.status(404).send("File not found");
+    }
+
+    res.sendFile(filePath);
+  });
+
   // --- Rename file/folder ---
   router.post("/rename", (req, res) => {
     //console.log("req.body" + JSON.stringify(req.body))
