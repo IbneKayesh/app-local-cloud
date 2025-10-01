@@ -20,6 +20,8 @@ import {
 } from "@/utils/sanitize";
 import FileUploaderComponent from "./FileUploaderComponent";
 import MoveComponent from "./MoveComponent";
+import RenameComponent from "./RenameComponent";
+import DeleteComponent from "./DeleteComponent";
 
 const CloudPage = () => {
   const {
@@ -267,68 +269,20 @@ const CloudPage = () => {
         />
       </DataTable>
 
-      <Dialog
-        header="Rename ?"
-        visible={renameDlg}
-        style={{ width: "20vw" }}
-        onHide={() => {
-          if (!renameDlg) return;
-          setRenameDlg(false);
-        }}
-        position={"top"}
-      >
-        <div className="card">
-          <div className="flex flex-wrap align-items-center mb-3 gap-2">
-            <InputText
-              value={renameFromData.newName}
-              onChange={(e) =>
-                setRenameFromData({
-                  ...renameFromData,
-                  newName: e.target.value,
-                })
-              }
-              placeholder="Enter name"
-              className="w-full"
-              autoComplete="false"
-            />
-          </div>
-          <div className="flex flex-wrap align-items-right gap-2">
-            <Button
-              label="Done"
-              severity="primary"
-              icon="pi pi-check"
-              style={{ marginLeft: "0.5rem" }}
-              onClick={handleRenameBtnClick}
-            />
-          </div>
-        </div>
-      </Dialog>
+      <RenameComponent
+        renameDlg={renameDlg}
+        setRenameDlg={setRenameDlg}
+        renameFromData={renameFromData}
+        setRenameFromData={setRenameFromData}
+        handleRenameBtnClick={handleRenameBtnClick}
+      />
 
-      <Dialog
-        header="Are you sure you want to delete ?"
-        visible={deleteDlg}
-        style={{ width: "25vw" }}
-        onHide={() => {
-          if (!deleteDlg) return;
-          setDeleteDlg(false);
-        }}
-      >
-        <div className="card">
-          <div className="flex flex-wrap align-items-center mb-3 gap-2">
-            {deleteFromData.isDirectory ? "Folder " : "File "}
-            {(deleteFromData.isDirectory ? "📁 " : "📄 ") + deleteFromData.name}
-          </div>
-          <div className="flex flex-wrap align-items-right gap-2">
-            <Button
-              label="Done"
-              severity="danger"
-              icon="pi pi-check"
-              style={{ marginLeft: "0.5rem" }}
-              onClick={handleDeleteBtnClick}
-            />
-          </div>
-        </div>
-      </Dialog>
+      <DeleteComponent
+        deleteDlg={deleteDlg}
+        setDeleteDlg={setDeleteDlg}
+        deleteFromData={deleteFromData}
+        handleDeleteBtnClick={handleDeleteBtnClick}
+      />
 
       <Dialog
         header="Create new Folder"
