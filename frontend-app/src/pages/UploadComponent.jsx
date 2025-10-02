@@ -1,10 +1,14 @@
 import { FileUpload } from "primereact/fileupload";
 import { Dialog } from "primereact/dialog";
 
+//internal components
+import FileUploaderComponent from "./FileUploaderComponent";
+
 const UploadComponent = ({
   uploaderDlg,
   setUploaderDlg,
-  handleUploaderBtnClick,
+  baseUrl,
+  currentPath,
 }) => {
   return (
     <>
@@ -19,7 +23,7 @@ const UploadComponent = ({
         position={"top"}
       >
         <div className="card">
-          <FileUpload
+          {/* <FileUpload
             name="file"
             customUpload
             uploadHandler={(event) => handleUploaderBtnClick(event.files)}
@@ -32,7 +36,8 @@ const UploadComponent = ({
             emptyTemplate={
               <p className="m-0">Drag and drop files to here to upload.</p>
             }
-          />
+          /> */}
+          <FileUploaderComponent baseUrl={baseUrl} currentPath={currentPath} />
         </div>
       </Dialog>
     </>

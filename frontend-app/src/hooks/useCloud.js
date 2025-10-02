@@ -439,6 +439,7 @@ const useCloud = () => {
     loading,
     error,
     baseUrl,
+    currentPath,
     drives,
     refetch: fetchDrives,
     handleDriveBtnClick,

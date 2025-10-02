@@ -30,6 +30,7 @@ const CloudPage = () => {
     error,
     drives,
     baseUrl,
+    currentPath,
     handleDriveBtnClick,
     currentPathContents,
     handleItemRowClick,
@@ -223,10 +224,6 @@ const CloudPage = () => {
     );
   };
 
-  const onUpload = (event) => {
-    console.log("Upload complete:", event.files);
-  };
-
   return (
     <>
       {drives.map((d) => (
@@ -327,7 +324,8 @@ const CloudPage = () => {
       <UploadComponent
         uploaderDlg={uploaderDlg}
         setUploaderDlg={setUploaderDlg}
-        handleUploaderBtnClick={handleUploaderBtnClick}
+        baseUrl={baseUrl}
+        currentPath={currentPath}
       />
 
       <Dialog
