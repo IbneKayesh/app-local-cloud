@@ -11,68 +11,29 @@ Features:
 10. Search file and folders
 11. Recent files/folders
 
-I've choose below enhancements from your list-
 
-1. Navigation & Browsing
-Recent folders/files:
-Keep track of last opened folders for quick access.
+I've choose below options for my project:
 
-3. File Operations
-Multiple file uploads & bulk actions:
-Select multiple files/folders for delete, move, or download as a zip.
-Rename in-line:
-Click on a filename to rename instead of popup prompt.
-Copy/Move files:
-Ability to cut/copy/paste files between folders.
-Context menu (right-click):
-Quick actions like rename, delete, download, zip, copy path.
+UI/UX Enhancements:
+Loading States: Add skeleton loaders or spinners during data fetching and operations.
 
-5. UI & UX Enhancements
-Sorting:
-Sort by name, size, type, or date modified.
+View Enhancements:
+Tree Navigation View: Add a collapsible tree sidebar for directory navigation.
+Details Pane: Add a sidebar showing selected file/folder details and properties.
 
-6. Performance & Safety
-Permissions handling:
-Show files user cannot access in disabled state.
-Undo delete:
-Keep a temporary trash for accidental deletions.
+Functionality Enhancements:
+Bulk Actions: Multi-select with checkboxes, bulk delete, move, copy operations.
+Drag & Drop: Enable dragging files to move/copy between directories or to upload.
+Advanced Search: Search with filters (file type, size range, date range, in subfolders).
+Favorites/Bookmarks: Add ability to bookmark frequently accessed folders.
+Recent Files: Dedicated view for recently accessed files across the system. (already done)
+Inline Text Editor: Allow editing text files directly in the preview dialog.
+File Compression: Add create/extract ZIP/RAR functionality.
+File Properties Dialog: Show detailed metadata (permissions, owner, etc.).
 
-7. Miscellaneous Enhancements
-File preview:
-Quick preview of text/images/video without download.
-Notifications:
-Toast notifications for success/error of actions.
-Customizable view:
-List view vs grid view toggle.
-Keyboard shortcuts:
-E.g., Delete = Del, Rename = F2, Upload = Ctrl+U.
+Performance & Features:
+Notifications/Toast Messages: Better feedback for all operations.
+File Tagging: Add tags/labels for organization.
 
-
-but keep a note all are done one by one, if one succeed then start next one.
-
-
-Backend API-
-/backend-app/config/drives.json
-/backend-app/public/index.html
-/backend-app/public/style.css
-/backend-app/public/app.js
-/backend-app/routes/files.js
-/backend-app/routes/search.js
-/backend-app/routes/upload.js
-/backend-app/app.js
-/backend-app/package.json
-
-Frontend-
-/frontend-app/vite.config.js
-/frontend-app/package.json
-/frontend-app/index.html
-/frontend-app/eslint.config.json
-/frontend-app/public/vite.svg
-/frontend-app/src/assets/react.svg
-/frontend-app/src/App.css
-/frontend-app/src/App.jsx
-/frontend-app/src/index.css
-/frontend-app/src/main.jsx
-
-project/frontend-app/(using vite and react app, build to dist and import to backend-app)
-project/backend-app/express js
+will implement one by one, I'll telling you which one will implement first. For now, 
+I'll start with the Tree Navigation View and Details Pane as they enhance the core navigation experience.
