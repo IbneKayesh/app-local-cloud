@@ -12,7 +12,7 @@ const DriveComponent = ({ drives, handleDriveBtnClick }) => {
         const percentUsed = Math.round((used / total) * 100);
 
         return (
-          <div key={d.letter} className="col-12 sm:col-4 md:col-4 lg:col-4">
+          <div key={d.letter} className="col-12 sm:col-4 md:col-2 lg:col-2">
             <Card
               className="cursor-pointer hover:shadow-4"
               onClick={(e) => handleDriveBtnClick(e, d)}

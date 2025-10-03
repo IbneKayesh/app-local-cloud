@@ -3,6 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const archiver = require("archiver");
 const multer = require("multer");
+const unzipper = require("unzipper");
 
 module.exports = () => {
   const router = express.Router();
@@ -24,7 +25,10 @@ module.exports = () => {
     folderPath = folderPath.replace(/\/+$/, ""); // remove trailing slash
 
     try {
-      if (!fs.existsSync(folderPath) || !fs.statSync(folderPath).isDirectory()) {
+      if (
+        !fs.existsSync(folderPath) ||
+        !fs.statSync(folderPath).isDirectory()
+      ) {
         return res.status(400).json({ error: "Invalid path" });
       }
 
@@ -272,6 +276,138 @@ module.exports = () => {
 
     // Save/move file if needed, currently it's stored in `uploads/`
     res.json({ success: true, file: req.file });
+  });
+
+  // --- Search ---
+  // Configurable limits
+  const MAX_RESULTS = 200; // stop after 200 matches
+  const MAX_DEPTH = 10; // how deep to recurse
+  const MAX_TIME = 6000; // ms, 6 seconds timeout
+
+  function searchFiles(dir, query, results, depth, startTime) {
+    if (results.length >= MAX_RESULTS) return;
+    if (depth > MAX_DEPTH) return;
+    if (Date.now() - startTime > MAX_TIME) return; // timeout safeguard
+
+    let items;
+    try {
+      items = fs.readdirSync(dir, { withFileTypes: true });
+    } catch {
+      return; // skip folders without permission
+    }
+
+    for (const item of items) {
+      if (results.length >= MAX_RESULTS) break;
+
+      const itemPath = path.join(dir, item.name);
+
+      if (item.name.toLowerCase().includes(query.toLowerCase())) {
+        try {
+          const stats = fs.statSync(itemPath);
+          results.push({
+            name: item.name,
+            path: itemPath,
+            isDirectory: item.isDirectory(),
+            size: item.isDirectory() ? 0 : stats.size,
+            mtime: stats.mtime,
+          });
+        } catch {
+          // ignore errors
+        }
+      }
+
+      if (item.isDirectory()) {
+        searchFiles(itemPath, query, results, depth + 1, startTime);
+      }
+    }
+  }
+
+  router.get("/search", (req, res) => {
+    const { path: basePath, query } = req.query;
+
+    if (!basePath || !fs.existsSync(basePath)) {
+      return res.status(400).json({ success: false, message: "Invalid path" });
+    }
+    if (!query) {
+      return res.status(400).json({ success: false, message: "Missing query" });
+    }
+
+    const results = [];
+    const startTime = Date.now();
+
+    searchFiles(basePath, query, results, 0, startTime);
+
+    res.json({
+      success: true,
+      items: results,
+      limitReached: results.length >= MAX_RESULTS,
+      timeLimit: Date.now() - startTime > MAX_TIME,
+    });
+  });
+
+  // Zip folder
+  router.post("/zip", (req, res) => {
+    const folderPath = req.body.path;
+    if (
+      !folderPath ||
+      !fs.existsSync(folderPath) ||
+      !fs.statSync(folderPath).isDirectory()
+    ) {
+      return res.status(400).json({ error: "Invalid folder path" });
+    }
+
+    const zipName = path.basename(folderPath) + ".zip";
+    const zipPath = path.join(path.dirname(folderPath), zipName);
+
+    const output = fs.createWriteStream(zipPath);
+    const archive = archiver("zip", { zlib: { level: 9 } });
+
+    output.on("close", () => {
+      res.json({ success: true, zipPath });
+    });
+
+    output.on("error", (err) => {
+      res.status(500).json({ error: err.message });
+    });
+
+    archive.on("error", (err) => {
+      res.status(500).json({ error: err.message });
+    });
+
+    archive.pipe(output);
+    archive.directory(folderPath, false);
+    archive.finalize();
+  });
+
+  // Unzip folder
+  router.post("/unzip", async (req, res) => {
+    const { zipPath, destination } = req.body;
+
+    if (!zipPath || !fs.existsSync(zipPath)) {
+      return res.status(400).json({ error: "Invalid zip path" });
+    }
+
+    if (
+      !destination ||
+      !fs.existsSync(destination) ||
+      !fs.statSync(destination).isDirectory()
+    ) {
+      return res.status(400).json({ error: "Invalid destination" });
+    }
+
+    try {
+      fs.createReadStream(zipPath)
+        .pipe(unzipper.Extract({ path: destination }))
+        .on("close", () => {
+          res.json({ success: true });
+        })
+        .on("error", (err) => {
+          console.error("Unzip error:", err);
+          res.status(500).json({ error: "Failed to unzip" });
+        });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
   });
 
   return router;

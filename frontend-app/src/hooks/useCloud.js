@@ -49,6 +49,10 @@ const useCloud = () => {
 
   const [selectedItem, setSelectedItem] = useState(null);
 
+  //search
+  const [searchDlg, setSearchDlg] = useState(false);
+  const [searchFromData, setSearchFromData] = useState({});
+
   useEffect(() => {
     getApiBaseUrl().then(setBaseUrl);
   }, []);
@@ -459,7 +463,36 @@ const useCloud = () => {
     });
   };
 
-  const handleSearchDlgClick = () => {};
+  const handleSearchDlgClick = () => {
+    setSearchDlg(true);
+  };
+  const handleSearchBtnClick = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch(
+        `${baseUrl}/filesystem/search?path=${encodeURIComponent(
+          currentPath
+        )}&query=${searchFromData.searchText}`
+      );
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      const data = await res.json();
+      if (data.success) {
+        //console.log("data " + JSON.stringify(data));
+
+        setCurrentPathContents(data.items);
+      } else {
+        setError("Rename failed: " + data.message);
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   //View mode
   const viewModeItems = [
@@ -523,6 +556,9 @@ const useCloud = () => {
       });
   }, [currentPathContents, searchTerm, sortField, sortOrder, groupBy]);
 
+  //compress
+  const handleCompressDlgClick = async () => {};
+  const handleUnCompressDlgClick = async () => {};
   return {
     loading,
     error,
@@ -588,7 +624,12 @@ const useCloud = () => {
     handleBtnSetPreviewClick,
 
     //search
+    searchDlg,
+    setSearchDlg,
+    searchFromData,
+    setSearchFromData,
     handleSearchDlgClick,
+    handleSearchBtnClick,
     searchTerm,
     setSearchTerm,
 
@@ -612,6 +653,10 @@ const useCloud = () => {
     //recent
     showRecent,
     setShowRecent,
+
+    //compress
+    handleCompressDlgClick,
+    handleUnCompressDlgClick,
   };
 };
 export default useCloud;

@@ -23,7 +23,11 @@ const TableGroupViewComponent = ({
         rowGroupMode="subheader"
         groupRowsBy="group"
         sortMode="single"
-        rowGroupHeaderTemplate={(data) => <span>{data.group}</span>}
+        rowGroupHeaderTemplate={(data) => {
+          const groupName = data.group;
+          const groupCount = filteredSortedContents.filter(item => item.group === groupName).length;
+          return <span>{groupName} ({groupCount})</span>;
+        }}
         removableSort
         dataKey="name"
         selectionMode={"radiobutton"}

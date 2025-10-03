@@ -14,7 +14,7 @@ const TableViewComponent = ({
     <DataTable
       value={filteredSortedContents}
       scrollable
-      scrollHeight="350px"
+      scrollHeight="500px"
       onRowClick={(e) => {
         handleItemRowClick(e);
       }}
@@ -24,6 +24,7 @@ const TableViewComponent = ({
       selectionMode={"radiobutton"}
       selection={selectedItem}
       onSelectionChange={(e) => setSelectedItem(e.value)}
+      className="hover"
     >
       <Column selectionMode="single" headerStyle={{ width: "3rem" }}></Column>
       <Column field="name" header="Name" body={name_body} sortable></Column>

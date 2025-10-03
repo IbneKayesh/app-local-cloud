@@ -57,6 +57,8 @@ export const getFileType = (name) => {
     ].includes(ext)
   )
     return "text";
+
+  if (ext === "zip") return "zip";
   return "other";
 };
 

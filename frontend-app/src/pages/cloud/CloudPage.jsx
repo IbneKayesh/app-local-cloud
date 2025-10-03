@@ -1,7 +1,5 @@
-import { useState, useEffect, useRef, useMemo } from "react";
 import { Button } from "primereact/button";
 import { BreadCrumb } from "primereact/breadcrumb";
-import { Dialog } from "primereact/dialog";
 
 //internal imports
 import useCloud from "@/hooks/useCloud";
@@ -21,6 +19,8 @@ import TableGroupViewComponent from "./TableGroupViewComponent";
 import DetailsPaneComponent from "./DetailsPaneComponent";
 import DriveComponent from "./DriveComponent";
 import ToolbarComponent from "./ToolbarComponent";
+import PreviewComponent from "./PreviewComponent";
+import SearchComponent from "./SearchComponent";
 
 const CloudPage = () => {
   const {
@@ -85,7 +85,12 @@ const CloudPage = () => {
     handleBtnSetPreviewClick,
 
     //search
+    searchDlg,
+    setSearchDlg,
+    searchFromData,
+    setSearchFromData,
     handleSearchDlgClick,
+    handleSearchBtnClick,
     searchTerm,
     setSearchTerm,
 
@@ -109,10 +114,11 @@ const CloudPage = () => {
     //recent
     showRecent,
     setShowRecent,
-  } = useCloud();
 
-  const abortControllerRef = useRef(null);
-  const [textContent, setTextContent] = useState("");
+    //compress
+    handleCompressDlgClick,
+    handleUnCompressDlgClick,
+  } = useCloud();
 
   //console.log("drives " + JSON.stringify(drives));
 
@@ -120,86 +126,6 @@ const CloudPage = () => {
     //console.log("rowData " + JSON.stringify(rowData));
     return (rowData.isDirectory ? "📁 " : "📄 ") + rowData.name;
   };
-
-  const renderPreview = () => {
-    if (!preview) return null;
-
-    //console.log("preview" + JSON.stringify(preview))
-
-    const type = getFileType(preview.name);
-
-    if (type === "image")
-      return (
-        <img
-          src={preview.url}
-          alt={preview.name}
-          style={{ maxWidth: "100%" }}
-        />
-      );
-    if (type === "video")
-      return <video src={preview.url} controls style={{ maxWidth: "100%" }} />;
-    if (type === "audio") return <audio src={preview.url} controls />;
-    if (type === "pdf")
-      return (
-        <iframe
-          src={preview.url}
-          width="100%"
-          height="500px"
-          title={preview.name}
-        />
-      );
-    if (type === "svg")
-      return (
-        <img
-          src={preview.url}
-          alt={preview.name}
-          style={{ maxWidth: "100%" }}
-        />
-      );
-    if (type === "text")
-      return (
-        <pre
-          style={{
-            whiteSpace: "pre-wrap",
-            maxHeight: "500px",
-            overflow: "auto",
-            backgroundColor: "#f4f4f4",
-            padding: "1rem",
-            borderRadius: "4px",
-          }}
-        >
-          {textContent || "Loading..."}
-        </pre>
-      );
-
-    return <p>Preview not available</p>;
-  };
-
-  useEffect(() => {
-    // Abort any ongoing fetch
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-
-    if (preview && getFileType(preview.name) === "text") {
-      setTextContent("Loading...");
-      abortControllerRef.current = new AbortController();
-      fetch(preview.url, { signal: abortControllerRef.current.signal })
-        .then((res) => res.text())
-        .then((text) => {
-          setTextContent(text);
-          // Removed handleBtnSetPreviewClick call to prevent infinite re-render
-        })
-        .catch((err) => {
-          if (err.name !== "AbortError") {
-            setTextContent("Error loading text content");
-          }
-        });
-    } else {
-      setTextContent("");
-      abortControllerRef.current = null;
-    }
-  }, [preview]);
 
   const size_body = (rowData) => {
     return rowData.isDirectory ? "-" : formatBytes(rowData.size);
@@ -270,6 +196,12 @@ const CloudPage = () => {
                 onClick={() => handleBtnSetPreviewClick(selectedItem)}
               />
               <Button
+                tooltip="Share"
+                icon="pi pi-share-alt"
+                size="small"
+                onClick={() => {}}
+              />
+              <Button
                 tooltip="Download"
                 icon="pi pi-download"
                 size="small"
@@ -288,7 +220,28 @@ const CloudPage = () => {
                 onClick={() => handleMoveDlgClick(selectedItem)}
               />
               <Button
-                tooltip="Delete"
+                tooltip="Compress"
+                icon="pi pi-folder"
+                size="small"
+                onClick={() => handleCompressDlgClick(selectedItem)}
+              />
+              <Button
+                tooltip="Uncompress"
+                icon="pi pi-folder-open"
+                size="small"
+                onClick={() => handleUnCompressDlgClick(selectedItem)}
+                disabled={fileType !== "zip"}
+              />
+              <Button
+                tooltip="Move to Bin"
+                icon="pi pi-trash"
+                size="small"
+                onClick={() => {
+                  //need to implement
+                }}
+              />
+              <Button
+                tooltip="Permanent Delete"
                 icon="pi pi-trash"
                 size="small"
                 severity="danger"
@@ -387,14 +340,10 @@ const CloudPage = () => {
         currentPath={currentPath}
       />
 
-      <Dialog
-        header={preview?.name}
-        visible={!!preview}
-        onHide={() => handleBtnSetPreviewClick(null)}
-        style={{ minWidth: "10vw" }}
-      >
-        {renderPreview()}
-      </Dialog>
+      <PreviewComponent
+        preview={preview}
+        handleBtnSetPreviewClick={handleBtnSetPreviewClick}
+      />
 
       <MoveComponent
         moveDlg={moveDlg}
@@ -402,6 +351,14 @@ const CloudPage = () => {
         moveDirs={recentContents}
         handleItemRowClick={handleMoveBtnClick}
         handleMoveBtnClick={handleMoveBtnClick}
+      />
+
+      <SearchComponent
+        searchDlg={searchDlg}
+        setSearchDlg={setSearchDlg}
+        searchFromData={searchFromData}
+        setSearchFromData={setSearchFromData}
+        handleSearchBtnClick={handleSearchBtnClick}
       />
     </>
   );
