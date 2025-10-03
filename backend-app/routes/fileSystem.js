@@ -169,7 +169,9 @@ module.exports = () => {
     // Check if destination directory is valid
     const destDir = path.dirname(normalizedDestination);
     if (!fs.existsSync(destDir) || !fs.statSync(destDir).isDirectory()) {
-      return res.status(400).json({ error: "Destination directory must be valid" });
+      return res
+        .status(400)
+        .json({ error: "Destination directory must be valid" });
     }
 
     fs.rename(source, normalizedDestination, (err) => {
@@ -239,6 +241,29 @@ module.exports = () => {
       return res
         .status(400)
         .json({ success: false, message: "No file uploaded" });
+    }
+
+    // Save/move file if needed, currently it's stored in `uploads/`
+    res.json({ success: true, file: req.file });
+  });
+
+  router.post("/uploads", upload.array("files"), (req, res) => {
+    const rawPath = req.query.currentPath;
+    const currentPath = path.normalize(rawPath);
+
+    console.log("Received upload for path:", currentPath);
+
+    // Validation
+    if (!currentPath || !fs.existsSync(currentPath)) {
+      console.error("Invalid path:", currentPath);
+      return res.status(400).json({ success: false, message: "Invalid path" });
+    }
+
+    if (!req.files || req.files.length === 0) {
+      console.error("No files uploaded.");
+      return res
+        .status(400)
+        .json({ success: false, message: "No files uploaded" });
     }
 
     // Save/move file if needed, currently it's stored in `uploads/`

@@ -5,12 +5,12 @@ const Layout = ({ children, menuItems }) => {
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Menubar model={menuItems} />
-      <main style={{ flex: 1, padding: '24px', overflow: 'auto' }}>
+      <main style={{ flex: 1, padding: '1px', overflow: 'auto' }}>
         <div style={{
-          padding: 24,
+          padding: 5,
           textAlign: 'center',
           backgroundColor: '#f5f5f5',
-          borderRadius: '8px',
+          borderRadius: '5px',
           minHeight: 'calc(100vh - 200px)'
         }}>
           {children}

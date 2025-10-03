@@ -1,23 +1,31 @@
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 
-const TableViewComponent = ({ filteredSortedContents, handleItemRowClick, sortField, sortOrder, onSort, name_body, size_body, mtime_body, actionTemplate, handleSelectItem }) => {
+const TableViewComponent = ({
+  filteredSortedContents,
+  handleItemRowClick,
+  name_body,
+  size_body,
+  mtime_body,
+  selectedItem,
+  setSelectedItem,
+}) => {
   return (
     <DataTable
       value={filteredSortedContents}
-      tableStyle={{ minWidth: "50rem" }}
+      scrollable
+      scrollHeight="350px"
       onRowClick={(e) => {
         handleItemRowClick(e);
-        handleSelectItem(e.data);
       }}
       size="small"
-      sortField={sortField}
-      sortOrder={sortOrder}
-      onSort={(e) => {
-        onSort(e);
-      }}
       removableSort
+      dataKey="name"
+      selectionMode={"radiobutton"}
+      selection={selectedItem}
+      onSelectionChange={(e) => setSelectedItem(e.value)}
     >
+      <Column selectionMode="single" headerStyle={{ width: "3rem" }}></Column>
       <Column field="name" header="Name" body={name_body} sortable></Column>
       <Column field="size" header="Size" body={size_body} sortable></Column>
       <Column
@@ -26,7 +34,6 @@ const TableViewComponent = ({ filteredSortedContents, handleItemRowClick, sortFi
         body={mtime_body}
         sortable
       ></Column>
-      <Column header="" body={actionTemplate}></Column>
     </DataTable>
   );
 };

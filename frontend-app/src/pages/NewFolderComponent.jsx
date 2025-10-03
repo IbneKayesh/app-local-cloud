@@ -14,7 +14,7 @@ const NewFolderComponent = ({
       <Dialog
         header="Create new Folder"
         visible={newFolderDlg}
-        style={{ width: "30vw" }}
+        style={{ width: "60vw" }}
         onHide={() => {
           if (!newFolderDlg) return;
           setNewFolderDlg(false);

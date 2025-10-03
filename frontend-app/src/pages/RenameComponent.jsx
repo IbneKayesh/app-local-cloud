@@ -15,7 +15,7 @@ const RenameComponent = ({
       <Dialog
         header="Rename ?"
         visible={renameDlg}
-        style={{ width: "30vw" }}
+        style={{ width: "60vw" }}
         onHide={() => {
           if (!renameDlg) return;
           setRenameDlg(false);

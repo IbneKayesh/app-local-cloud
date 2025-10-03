@@ -12,7 +12,7 @@ const DeleteComponent = ({
       <Dialog
         header="Are you sure you want to delete ?"
         visible={deleteDlg}
-        style={{ width: "25vw" }}
+        style={{ width: "60vw" }}
         onHide={() => {
           if (!deleteDlg) return;
           setDeleteDlg(false);

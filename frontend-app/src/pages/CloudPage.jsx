@@ -18,7 +18,6 @@ import {
   formatLocalDateTime,
   getFileType,
 } from "@/utils/sanitize";
-import FileUploaderComponent from "./FileUploaderComponent";
 import MoveComponent from "./MoveComponent";
 import RenameComponent from "./RenameComponent";
 import DeleteComponent from "./DeleteComponent";
@@ -27,7 +26,6 @@ import UploadComponent from "./UploadComponent";
 import TableViewComponent from "./TableViewComponent";
 import GridViewComponent from "./GridViewComponent";
 import TableGroupViewComponent from "./TableGroupViewComponent";
-import TreeSidebarComponent from "./TreeSidebarComponent";
 import DetailsPaneComponent from "./DetailsPaneComponent";
 
 const CloudPage = () => {
@@ -39,12 +37,13 @@ const CloudPage = () => {
     currentPath,
     handleDriveBtnClick,
     currentPathContents,
+    filteredSortedContents,
     handleItemRowClick,
     handleBtnRecentBtnClick,
     breadCrumbHome,
     breadCrumbItems,
     recentContents,
-    onBtnItemDownloadClick,
+    handleBtnItemDownloadClick,
     //rename
     handleRenameDlgClick,
     renameDlg,
@@ -74,6 +73,10 @@ const CloudPage = () => {
     setUploaderDlg,
     handleUploaderBtnClick,
 
+    //selected item
+    selectedItem,
+    setSelectedItem,
+
     //move
     handleMoveDlgClick,
     moveDlg,
@@ -87,16 +90,33 @@ const CloudPage = () => {
 
     //search
     handleSearchDlgClick,
+    searchTerm,
+    setSearchTerm,
+
+    //sort order
+    sortField,
+    setSortField,
+    sortOrder,
+    setSortOrder,
+    groupBy,
+    setGroupBy,
+
+    //item view mode
+    itemViewMode,
+    setItemViewMode,
+    viewModeItems,
+
+    //detail
+    showDetail,
+    setShowDetail,
+
+    //recent
+    showRecent,
+    setShowRecent,
   } = useCloud();
 
   const abortControllerRef = useRef(null);
-  const [viewMode, setViewMode] = useState('table'); // 'table', 'grid', 'grouped'
-  const [sortField, setSortField] = useState('name');
-  const [sortOrder, setSortOrder] = useState(1); // 1 asc, -1 desc
-  const [searchTerm, setSearchTerm] = useState('');
-  const [groupBy, setGroupBy] = useState('type'); // 'type', 'extension', 'date'
-  const [showTreeSidebar, setShowTreeSidebar] = useState(true);
-  const [selectedItem, setSelectedItem] = useState(null);
+  const [textContent, setTextContent] = useState("");
 
   //console.log("drives " + JSON.stringify(drives));
 
@@ -156,7 +176,7 @@ const CloudPage = () => {
             borderRadius: "4px",
           }}
         >
-          {preview.textContent || "Loading..."}
+          {textContent || "Loading..."}
         </pre>
       );
 
@@ -170,21 +190,21 @@ const CloudPage = () => {
     }
 
     if (preview && getFileType(preview.name) === "text") {
+      setTextContent("Loading...");
       abortControllerRef.current = new AbortController();
       fetch(preview.url, { signal: abortControllerRef.current.signal })
         .then((res) => res.text())
         .then((text) => {
-          preview.textContent = text;
-          // Force re-render by updating preview state
-          handleBtnSetPreviewClick({ ...preview });
+          setTextContent(text);
+          // Removed handleBtnSetPreviewClick call to prevent infinite re-render
         })
         .catch((err) => {
           if (err.name !== "AbortError") {
-            preview.textContent = "Error loading text content";
-            handleBtnSetPreviewClick({ ...preview });
+            setTextContent("Error loading text content");
           }
         });
     } else {
+      setTextContent("");
       abortControllerRef.current = null;
     }
   }, [preview]);
@@ -197,335 +217,281 @@ const CloudPage = () => {
     return formatLocalDateTime(rowData.mtime);
   };
 
-  const actionTemplate = (rowData) => {
-    const fileType = getFileType(rowData.name);
-    const menuItems = [
-      ...(fileType !== "other"
-        ? [
-            {
-              label: "Download",
-              icon: "pi pi-download",
-              command: () => onBtnItemDownloadClick(rowData),
-            },
-          ]
-        : []),
-      {
-        label: "Rename",
-        icon: "pi pi-pencil",
-        command: () => handleRenameDlgClick(rowData),
-      },
-      {
-        label: "Move",
-        icon: "pi pi-arrows-alt",
-        command: () => handleMoveDlgClick(rowData),
-      },
-      {
-        label: "Delete",
-        icon: "pi pi-trash",
-        command: () => handleDeleteDlgClick(rowData),
-      },
-    ];
-
-    return (
-      <SplitButton
-        label=""
-        icon={fileType === "other" ? "pi pi-download" : "pi pi-eye"}
-        onClick={() =>
-          fileType === "other"
-            ? onBtnItemDownloadClick(rowData)
-            : handleBtnSetPreviewClick(rowData)
-        }
-        model={menuItems}
-        severity={fileType === "other" ? "primary" : "info"}
-      />
-    );
-  };
-
-  // Filter and sort currentPathContents based on searchTerm, sortField, sortOrder
-  const filteredSortedContents = useMemo(() => {
-    return currentPathContents
-      .filter((item) =>
-        item.name.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-      .map((item) => {
-        let group = '';
-        if (groupBy === 'type') {
-          group = item.isDirectory ? 'Folders' : 'Files';
-        } else if (groupBy === 'extension') {
-          group = item.isDirectory ? 'Folders' : (item.name.split('.').pop()?.toUpperCase() || 'No Extension');
-        } else if (groupBy === 'date') {
-          const d = new Date(item.mtime);
-          group = d.toLocaleDateString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit' });
-        }
-        return { ...item, group };
-      })
-      .sort((a, b) => {
-        // First sort by group
-        if (a.group < b.group) return -1;
-        if (a.group > b.group) return 1;
-
-        // Then by sortField
-        let aValue = a[sortField];
-        let bValue = b[sortField];
-
-        if (sortField === 'isDirectory') {
-          aValue = aValue ? 0 : 1;
-          bValue = bValue ? 0 : 1;
-        }
-
-        if (aValue < bValue) return -1 * sortOrder;
-        if (aValue > bValue) return 1 * sortOrder;
-        return 0;
-      });
-  }, [currentPathContents, searchTerm, sortField, sortOrder, groupBy]);
-
-  const truncateName = (name, maxLength = 15) => {
-    if (name.length <= maxLength) return name;
-    const parts = name.split('.');
-    const ext = parts.pop();
-    const base = parts.join('.');
-    if (base.length <= maxLength - ext.length - 3) return name;
-    return base.slice(0, maxLength - ext.length - 3) + '...' + ext;
-  };
-
-  const treeData = useMemo(() => {
-    if (breadCrumbItems.length === 0) return [];
-    const root = breadCrumbItems[0];
-    let current = { key: root.label, label: root.label, data: root, icon: 'pi pi-hdd', children: [], expanded: true };
-    const tree = [current];
-    for (let i = 1; i < breadCrumbItems.length; i++) {
-      const item = breadCrumbItems[i];
-      const child = { key: item.label, label: item.label, data: item, icon: 'pi pi-folder', children: [], expanded: true };
-      current.children.push(child);
-      current = child;
-    }
-    return tree;
-  }, [breadCrumbItems]);
-
-
   return (
-    <div style={{ display: 'flex', height: '100vh' }}>
-      {showTreeSidebar && <TreeSidebarComponent treeData={treeData} onNodeSelect={(key) => {
-
-        // Find the node in treeData
-
-        const findNode = (nodes, k) => {
-
-          for (const node of nodes) {
-
-            if (node.key === k) return node;
-
-            const found = findNode(node.children, k);
-
-            if (found) return found;
-
-          }
-
-          return null;
-
-        };
-
-        const node = findNode(treeData, key);
-
-        if (node && node.data.path) {
-
-          handleBtnRecentBtnClick(node.data.path);
-
-        }
-
-      }} />}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        {drives.map((d) => (
-          <Button
-            key={d.letter}
-            label={d.letter}
-            severity="help"
-            style={{ margin: "0.5rem" }}
-            onClick={(e) => {
-              handleDriveBtnClick(e, d);
-            }}
-          />
-        ))}
+    <>
+      {drives.map((d) => (
         <Button
-          label="Search"
-          severity="primary"
-          icon="pi pi-search"
-          style={{ margin: "0.5rem" }}
+          key={d.letter}
+          label={d.letter}
+          severity="help"
+          style={{ margin: "0.2rem" }}
           onClick={(e) => {
-            handleSearchDlgClick(e);
+            handleDriveBtnClick(e, d);
           }}
         />
+      ))}
+      <div className="card flex flex-wrap justify-content-center gap-1 my-1">
         <Button
           label="Upload"
-          severity="primary"
           icon="pi pi-upload"
-          style={{ margin: "0.5rem" }}
+          size="small"
           onClick={(e) => {
             handleUploaderDlgClick(e);
           }}
         />
         <Button
-          label="Create new Folder"
-          severity="primary"
-          icon="pi pi-plus"
-          style={{ margin: "0.5rem" }}
+          label="Create New Folder"
+          icon="pi pi-folder"
+          size="small"
           onClick={(e) => {
             handleNewFolderDlgClick(e);
           }}
         />
-        <Button
-          label={showTreeSidebar ? "Hide Tree" : "Show Tree"}
-          severity="secondary"
-          icon="pi pi-bars"
-          style={{ margin: "0.5rem" }}
-          onClick={() => setShowTreeSidebar(!showTreeSidebar)}
-        />
-        <Button
-          label="Table View"
-          severity={viewMode === 'table' ? 'success' : 'secondary'}
+        <SplitButton
           icon="pi pi-table"
-          style={{ margin: "0.5rem" }}
-          onClick={() => setViewMode('table')}
+          size="small"
+          onClick={() => setItemViewMode("table")}
+          model={viewModeItems}
         />
+
+        {itemViewMode === "grouped" && (
+          <Button
+            label={`Group by ${
+              groupBy === "type"
+                ? "Type"
+                : groupBy === "extension"
+                ? "Extension"
+                : "Date"
+            }`}
+            severity="secondary"
+            size="small"
+            onClick={() => {
+              const nextField =
+                groupBy === "type"
+                  ? "extension"
+                  : groupBy === "extension"
+                  ? "date"
+                  : "type";
+              setGroupBy(nextField);
+            }}
+          />
+        )}
+
+        {itemViewMode === "grid" && (
+          <>
+            <Button
+              label={`Sort by ${
+                sortField === "name"
+                  ? "Name"
+                  : sortField === "size"
+                  ? "Size"
+                  : "Modified"
+              }`}
+              severity="secondary"
+              size="small"
+              onClick={() => {
+                const nextField =
+                  sortField === "name"
+                    ? "size"
+                    : sortField === "size"
+                    ? "mtime"
+                    : "name";
+                setSortField(nextField);
+                setSortOrder(1);
+              }}
+            />
+            <Button
+              label={sortOrder === 1 ? "Asc" : "Desc"}
+              severity="secondary"
+              size="small"
+              onClick={() => setSortOrder(sortOrder === 1 ? -1 : 1)}
+            />
+          </>
+        )}
         <Button
-          label="Grid View"
-          severity={viewMode === 'grid' ? 'success' : 'secondary'}
-          icon="pi pi-th-large"
-          style={{ margin: "0.5rem" }}
-          onClick={() => setViewMode('grid')}
-        />
-        <Button
-          label="Grouped Table"
-          severity={viewMode === 'grouped' ? 'success' : 'secondary'}
-          icon="pi pi-list"
-          style={{ margin: "0.5rem" }}
-          onClick={() => setViewMode('grouped')}
+          icon="pi pi-search"
+          size="small"
+          onClick={(e) => {
+            handleSearchDlgClick(e);
+          }}
         />
         <InputText
           placeholder="Search files/folders"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          style={{ margin: "0.5rem", width: "200px" }}
+          style={{ width: "200px" }}
+          size="small"
           clearable
         />
 
-
-        <br />
-        {recentContents.map((item) => (
-          <Button
-            key={item.path}
-            label={`${item.label}`}
-            title={item.path}
-            onClick={() => handleBtnRecentBtnClick(item.path)}
-            style={{ margin: "0.5rem" }}
-            size="small"
-            badge={item.count}
-            severity="secondary"
-          />
-        ))}
-
-        <BreadCrumb model={breadCrumbItems} home={breadCrumbHome} />
-        {viewMode === 'table' && (
-          <TableViewComponent
-            filteredSortedContents={filteredSortedContents}
-            handleItemRowClick={handleItemRowClick}
-            sortField={sortField}
-            sortOrder={sortOrder}
-            onSort={(e) => {
-              setSortField(e.sortField);
-              setSortOrder(e.sortOrder);
-            }}
-            name_body={name_body}
-            size_body={size_body}
-            mtime_body={mtime_body}
-            actionTemplate={actionTemplate}
-            handleSelectItem={handleSelectItem}
-          />
-        )}
-        {viewMode === 'grid' && (
-          <GridViewComponent
-            filteredSortedContents={filteredSortedContents}
-            handleItemRowClick={handleItemRowClick}
-            size_body={size_body}
-            mtime_body={mtime_body}
-            actionTemplate={actionTemplate}
-            truncateName={truncateName}
-            sortField={sortField}
-            setSortField={setSortField}
-            sortOrder={sortOrder}
-            setSortOrder={setSortOrder}
-            handleSelectItem={handleSelectItem}
-          />
-        )}
-        {viewMode === 'grouped' && (
-          <TableGroupViewComponent
-            filteredSortedContents={filteredSortedContents}
-            handleItemRowClick={handleItemRowClick}
-            sortField={sortField}
-            sortOrder={sortOrder}
-            onSort={(e) => {
-              setSortField(e.sortField);
-              setSortOrder(e.sortOrder);
-            }}
-            name_body={name_body}
-            size_body={size_body}
-            mtime_body={mtime_body}
-            actionTemplate={actionTemplate}
-            groupBy={groupBy}
-            setGroupBy={setGroupBy}
-            handleSelectItem={handleSelectItem}
-          />
-        )}
-
-        <RenameComponent
-          renameDlg={renameDlg}
-          setRenameDlg={setRenameDlg}
-          renameFromData={renameFromData}
-          setRenameFromData={setRenameFromData}
-          handleRenameBtnClick={handleRenameBtnClick}
+        <Button
+          icon={showRecent ? "pi pi-history" : "pi pi-clock"}
+          size="small"
+          onClick={() => setShowRecent(!showRecent)}
         />
 
-        <DeleteComponent
-          deleteDlg={deleteDlg}
-          setDeleteDlg={setDeleteDlg}
-          deleteFromData={deleteFromData}
-          handleDeleteBtnClick={handleDeleteBtnClick}
-        />
-
-        <NewFolderComponent
-          newFolderDlg={newFolderDlg}
-          setNewFolderDlg={setNewFolderDlg}
-          newFolderFromData={newFolderFromData}
-          setNewFolderFromData={setNewFolderFromData}
-          handleNewFolderBtnClick={handleNewFolderBtnClick}
-        />
-
-        <UploadComponent
-          uploaderDlg={uploaderDlg}
-          setUploaderDlg={setUploaderDlg}
-          baseUrl={baseUrl}
-          currentPath={currentPath}
-        />
-
-        <Dialog
-          header={preview?.name}
-          visible={!!preview}
-          onHide={() => handleBtnSetPreviewClick(null)}
-          style={{ minWidth: "10vw" }}
-        >
-          {renderPreview()}
-        </Dialog>
-
-        <MoveComponent
-          moveDlg={moveDlg}
-          setMoveDlg={setMoveDlg}
-          moveDirs={recentContents}
-          handleItemRowClick={handleMoveBtnClick}
-          handleMoveBtnClick={handleMoveBtnClick}
+        <Button
+          icon={showDetail ? "pi pi-window-maximize" : "pi pi-window-minimize"}
+          size="small"
+          onClick={() => setShowDetail(!showDetail)}
         />
       </div>
-      <DetailsPaneComponent selectedItem={selectedItem} size_body={size_body} mtime_body={mtime_body} />
-    </div>
+
+      {showRecent && (
+        <div className="card flex flex-wrap justify-content-center gap-1 my-1">
+          {recentContents.map((item) => (
+            <Button
+              key={item.path}
+              label={`${item.label}`}
+              title={item.path}
+              onClick={() => handleBtnRecentBtnClick(item.path)}
+              size="small"
+              badge={item.count}
+              severity="secondary"
+            />
+          ))}
+        </div>
+      )}
+
+      {selectedItem &&
+        (() => {
+          const fileType = getFileType(selectedItem.name);
+
+          return (
+            <div className="card flex flex-wrap justify-content-center gap-1 my-1">
+              <Button
+                label="View"
+                icon="pi pi-eye"
+                size="small"
+                disabled={fileType === "other"}
+                onClick={() => handleBtnSetPreviewClick(selectedItem)}
+              />
+              <Button
+                label="Download"
+                icon="pi pi-download"
+                size="small"
+                onClick={() => handleBtnItemDownloadClick(selectedItem)}
+              />
+              <Button
+                label="Rename"
+                icon="pi pi-pencil"
+                size="small"
+                onClick={() => handleRenameDlgClick(selectedItem)}
+              />
+              <Button
+                label="Move"
+                icon="pi pi-arrows-alt"
+                size="small"
+                onClick={() => handleMoveDlgClick(selectedItem)}
+              />
+              <Button
+                label="Delete"
+                icon="pi pi-trash"
+                size="small"
+                severity="danger"
+                onClick={() => handleDeleteDlgClick(selectedItem)}
+              />
+            </div>
+          );
+        })()}
+
+      <BreadCrumb model={breadCrumbItems} home={breadCrumbHome} />
+      <div className="grid">
+        <div className={showDetail ? "col-8" : "col-12"}>
+          {itemViewMode === "table" && (
+            <TableViewComponent
+              filteredSortedContents={filteredSortedContents}
+              handleItemRowClick={handleItemRowClick}
+              name_body={name_body}
+              size_body={size_body}
+              mtime_body={mtime_body}
+              selectedItem={selectedItem}
+              setSelectedItem={setSelectedItem}
+            />
+          )}
+
+          {itemViewMode === "grouped" && (
+            <TableGroupViewComponent
+              filteredSortedContents={filteredSortedContents}
+              handleItemRowClick={handleItemRowClick}
+              name_body={name_body}
+              size_body={size_body}
+              mtime_body={mtime_body}
+              selectedItem={selectedItem}
+              setSelectedItem={setSelectedItem}
+            />
+          )}
+
+          {itemViewMode === "grid" && (
+            <GridViewComponent
+              filteredSortedContents={filteredSortedContents}
+              handleItemRowClick={handleItemRowClick}
+              size_body={size_body}
+              mtime_body={mtime_body}
+              selectedItem={selectedItem}
+              setSelectedItem={setSelectedItem}
+            />
+          )}
+        </div>
+
+        {showDetail && (
+          <div className="col-4">
+            <DetailsPaneComponent
+              selectedItem={selectedItem}
+              size_body={size_body}
+              mtime_body={mtime_body}
+            />
+          </div>
+        )}
+      </div>
+
+      <RenameComponent
+        renameDlg={renameDlg}
+        setRenameDlg={setRenameDlg}
+        renameFromData={renameFromData}
+        setRenameFromData={setRenameFromData}
+        handleRenameBtnClick={handleRenameBtnClick}
+      />
+
+      <DeleteComponent
+        deleteDlg={deleteDlg}
+        setDeleteDlg={setDeleteDlg}
+        deleteFromData={deleteFromData}
+        handleDeleteBtnClick={handleDeleteBtnClick}
+      />
+
+      <NewFolderComponent
+        newFolderDlg={newFolderDlg}
+        setNewFolderDlg={setNewFolderDlg}
+        newFolderFromData={newFolderFromData}
+        setNewFolderFromData={setNewFolderFromData}
+        handleNewFolderBtnClick={handleNewFolderBtnClick}
+      />
+
+      <UploadComponent
+        uploaderDlg={uploaderDlg}
+        setUploaderDlg={setUploaderDlg}
+        baseUrl={baseUrl}
+        currentPath={currentPath}
+      />
+
+      <Dialog
+        header={preview?.name}
+        visible={!!preview}
+        onHide={() => handleBtnSetPreviewClick(null)}
+        style={{ minWidth: "10vw" }}
+      >
+        {renderPreview()}
+      </Dialog>
+
+      <MoveComponent
+        moveDlg={moveDlg}
+        setMoveDlg={setMoveDlg}
+        moveDirs={recentContents}
+        handleItemRowClick={handleMoveBtnClick}
+        handleMoveBtnClick={handleMoveBtnClick}
+      />
+    </>
   );
 };
 

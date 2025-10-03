@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useState } from "react";
 import path from "path";
 import { getApiBaseUrl } from "../utils/api";
@@ -37,6 +37,21 @@ const useCloud = () => {
   const [moveFromData, setMoveFromData] = useState({});
 
   const [preview, setPreview] = useState(null);
+
+  //item view mode
+  const [itemViewMode, setItemViewMode] = useState("table"); // 'table', 'grid', 'grouped'
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortField, setSortField] = useState("name");
+  const [sortOrder, setSortOrder] = useState(1); // 1 asc, -1 desc
+  const [groupBy, setGroupBy] = useState("type"); // 'type', 'extension', 'date'
+
+  //detail
+  const [showDetail, setShowDetail] = useState(false);
+
+  //recent
+  const [showRecent, setShowRecent] = useState(false);
+
+  const [selectedItem, setSelectedItem] = useState(null);
 
   useEffect(() => {
     getApiBaseUrl().then(setBaseUrl);
@@ -87,6 +102,8 @@ const useCloud = () => {
 
     updateBreadcrumbs(path);
     addRecentFolder(path);
+
+    setSelectedItem(null);
 
     try {
       const res = await fetch(
@@ -194,7 +211,7 @@ const useCloud = () => {
     loadPath(e);
   };
 
-  const onBtnItemDownloadClick = (rowData) => {
+  const handleBtnItemDownloadClick = (rowData) => {
     //console.log("rowData " + JSON.stringify(rowData));
     //const selectedPath = `${currentPath}\\${rowData.name}`;
     //console.log("selectedPath " + selectedPath);
@@ -435,6 +452,68 @@ const useCloud = () => {
 
   const handleSearchDlgClick = () => {};
 
+  //View mode
+  const viewModeItems = [
+    {
+      label: "Group",
+      icon: "pi pi-list",
+      command: () => {
+        setItemViewMode("grouped");
+      },
+    },
+    {
+      label: "Grid",
+      icon: "pi pi-th-large",
+      command: () => {
+        setItemViewMode("grid");
+      },
+    },
+  ];
+
+  // Filter and sort currentPathContents based on searchTerm, sortField, sortOrder
+  const filteredSortedContents = useMemo(() => {
+    return currentPathContents
+      .filter((item) =>
+        item.name.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      .map((item) => {
+        let group = "";
+        if (groupBy === "type") {
+          group = item.isDirectory ? "Folders" : "Files";
+        } else if (groupBy === "extension") {
+          group = item.isDirectory
+            ? "Folders"
+            : item.name.split(".").pop()?.toUpperCase() || "No Extension";
+        } else if (groupBy === "date") {
+          const d = new Date(item.mtime);
+          group = d.toLocaleDateString(undefined, {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+          });
+        }
+        return { ...item, group };
+      })
+      .sort((a, b) => {
+        // First sort by group
+        if (a.group < b.group) return -1;
+        if (a.group > b.group) return 1;
+
+        // Then by sortField
+        let aValue = a[sortField];
+        let bValue = b[sortField];
+
+        if (sortField === "isDirectory") {
+          aValue = aValue ? 0 : 1;
+          bValue = bValue ? 0 : 1;
+        }
+
+        if (aValue < bValue) return -1 * sortOrder;
+        if (aValue > bValue) return 1 * sortOrder;
+        return 0;
+      });
+  }, [currentPathContents, searchTerm, sortField, sortOrder, groupBy]);
+
   return {
     loading,
     error,
@@ -444,13 +523,14 @@ const useCloud = () => {
     refetch: fetchDrives,
     handleDriveBtnClick,
     currentPathContents,
+    filteredSortedContents,
     handleItemRowClick,
     handleBtnRecentBtnClick,
 
     breadCrumbHome,
     breadCrumbItems,
     recentContents,
-    onBtnItemDownloadClick,
+    handleBtnItemDownloadClick,
 
     //rename
     handleRenameDlgClick,
@@ -481,6 +561,10 @@ const useCloud = () => {
     setUploaderDlg,
     handleUploaderBtnClick,
 
+    //selected item
+    selectedItem,
+    setSelectedItem,
+
     //move
     handleMoveDlgClick,
     moveDlg,
@@ -494,6 +578,29 @@ const useCloud = () => {
 
     //search
     handleSearchDlgClick,
+    searchTerm,
+    setSearchTerm,
+
+    //sort order
+    sortField,
+    setSortField,
+    sortOrder,
+    setSortOrder,
+    groupBy,
+    setGroupBy,
+
+    //item view mode
+    itemViewMode,
+    setItemViewMode,
+    viewModeItems,
+
+    //detail
+    showDetail,
+    setShowDetail,
+
+    //recent
+    showRecent,
+    setShowRecent,
   };
 };
 export default useCloud;

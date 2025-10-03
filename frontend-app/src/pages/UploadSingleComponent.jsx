@@ -1,6 +1,6 @@
 import { FileUpload } from "primereact/fileupload";
 import { Dialog } from "primereact/dialog";
-import React, { useRef, useState } from "react";
+import React, { useRef } from "react";
 import { Toast } from "primereact/toast";
 
 //internal components
@@ -12,19 +12,16 @@ const UploadComponent = ({
   currentPath,
 }) => {
   const toast = useRef(null);
-  const [selectedCount, setSelectedCount] = useState(0);
 
   const onUpload = (e) => {
-    const uploadedNames = e.files.map((f) => f.name).join(", ");
-    const count = e.files.length;
     toast.current.show({
       severity: "success",
-      summary: `Upload Complete (${count} file${count > 1 ? "s" : ""})`,
-      detail: uploadedNames,
+      summary: "Upload Complete",
+      detail: e.files[0].name,
     });
-    // loadPath(currentPath);
-    setSelectedCount(0);
+    //loadPath(currentPath); // refresh list
   };
+
 
   const onError = (e) => {
     toast.current.show({
@@ -49,20 +46,16 @@ const UploadComponent = ({
       >
         <div className="card">
           <FileUpload
-            name="files"
-            url={`${baseUrl}/filesystem/uploads?currentPath=${encodeURIComponent(
+            name="file"
+            url={`${baseUrl}/filesystem/upload?currentPath=${encodeURIComponent(
               currentPath
             )}`}
-            multiple={true}
+            multiple={false}
             accept="*"
             maxFileSize={5000 * 1024 * 1024} // 5GB
-            chooseLabel="Browse"
-            uploadLabel={
-              selectedCount > 0 ? `Upload (${selectedCount})` : "Upload"
-            }
+            chooseLabel="Select File"
+            uploadLabel="Upload"
             cancelLabel="Cancel"
-            onSelect={(e) => setSelectedCount(e.files.length)}
-            onClear={() => setSelectedCount(0)}
             onUpload={onUpload}
             onError={onError}
             emptyTemplate={

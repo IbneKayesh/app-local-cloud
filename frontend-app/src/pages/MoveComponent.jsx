@@ -28,7 +28,7 @@ const MoveComponent = ({
       <Dialog
         header="Move to"
         visible={moveDlg}
-        style={{ width: "30vw" }}
+        style={{ width: "60vw" }}
         onHide={() => {
           if (!moveDlg) return;
           setMoveDlg(false);
