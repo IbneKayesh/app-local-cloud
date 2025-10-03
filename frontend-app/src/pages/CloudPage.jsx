@@ -21,6 +21,8 @@ import TableViewComponent from "./TableViewComponent";
 import GridViewComponent from "./GridViewComponent";
 import TableGroupViewComponent from "./TableGroupViewComponent";
 import DetailsPaneComponent from "./DetailsPaneComponent";
+import DriveComponent from "./DriveComponent";
+import ToolbarComponent from "./ToolbarComponent";
 
 const CloudPage = () => {
   const {
@@ -119,10 +121,6 @@ const CloudPage = () => {
     return (rowData.isDirectory ? "📁 " : "📄 ") + rowData.name;
   };
 
-  const handleSelectItem = (item) => {
-    setSelectedItem(item);
-  };
-
   const renderPreview = () => {
     if (!preview) return null;
 
@@ -213,17 +211,16 @@ const CloudPage = () => {
 
   return (
     <>
-      {drives.map((d) => (
-        <Button
-          key={d.letter}
-          label={d.letter}
-          severity="help"
-          style={{ margin: "0.2rem" }}
-          onClick={(e) => {
-            handleDriveBtnClick(e, d);
-          }}
+      {console.log("recentContents" + recentContents)}
+      {recentContents && (
+        <DriveComponent
+          drives={drives}
+          handleDriveBtnClick={handleDriveBtnClick}
         />
-      ))}
+      )}
+
+      <ToolbarComponent />
+
       <div className="card flex flex-wrap justify-content-center gap-1 my-1">
         <Button
           label="Upload"

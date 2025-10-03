@@ -37,7 +37,7 @@ const GridViewComponent = ({
         }}
       >
         {filteredSortedContents.map((item) => (
-          <Card key={item.name} header={headerContent(item)}>
+          <Card key={item.name} header={headerContent(item)} className="hover:shadow-4">
             <div
               style={{ textAlign: "center", cursor: "pointer" }}
               onClick={() => {

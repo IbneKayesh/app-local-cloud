@@ -24,6 +24,10 @@ module.exports = () => {
     folderPath = folderPath.replace(/\/+$/, ""); // remove trailing slash
 
     try {
+      if (!fs.existsSync(folderPath) || !fs.statSync(folderPath).isDirectory()) {
+        return res.status(400).json({ error: "Invalid path" });
+      }
+
       const hiddenFolders = ["System Volume Information", "$RECYCLE.BIN"];
 
       const items = fs

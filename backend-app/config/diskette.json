@@ -1,8 +1,8 @@
 {
   "drives": [
-    { "letter": "D:", "path": "D:\\" },
-    { "letter": "E:", "path": "E:\\" },
-    { "letter": "F:", "path": "F:\\" }
+    { "letter": "D:", "path": "D:\\", "used": 50, "total": 100 },
+    { "letter": "E:", "path": "E:\\", "used": 10, "total": 50 },
+    { "letter": "F:", "path": "F:\\", "used": 80, "total": 120 }
   ],
   "hidden": [
     { "name": "System Volume Information" },
