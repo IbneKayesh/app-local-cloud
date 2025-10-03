@@ -26,7 +26,7 @@ const MoveComponent = ({
   return (
     <>
       <Dialog
-        header="Move to"
+        header="Move to Recent Folders"
         visible={moveDlg}
         style={{ width: "60vw" }}
         onHide={() => {
