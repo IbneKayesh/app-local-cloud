@@ -1,10 +1,9 @@
-
 import React, { useState } from "react";
-import { PrimeReactProvider } from 'primereact/api';
+import { PrimeReactProvider } from "primereact/api";
 
 import Layout from "./Layout";
 import HomePage from "./pages/HomePage";
-import CloudPage from "./pages/CloudPage";
+import CloudPage from "./pages/cloud/CloudPage";
 import AboutPage from "./pages/AboutPage";
 
 const App = () => {
@@ -24,27 +23,29 @@ const App = () => {
 
   const menuItems = [
     {
-      label: 'Home',
-      icon: 'pi pi-home',
-      command: () => setSelectedKey("0")
+      label: "Home",
+      icon: "pi pi-home",
+      command: () => setSelectedKey("0"),
     },
     {
-      label: 'Cloud',
-      icon: 'pi pi-cloud',
-      command: () => setSelectedKey("1")
+      label: "Cloud",
+      icon: "pi pi-cloud",
+      command: () => setSelectedKey("1"),
     },
     {
-      label: 'About',
-      icon: 'pi pi-user',
-      command: () => setSelectedKey("2")
-    }
+      label: "About",
+      icon: "pi pi-user",
+      command: () => setSelectedKey("2"),
+    },
   ];
 
   return (
     <PrimeReactProvider>
-      <Layout menuItems={menuItems}>
+      {/* <Layout menuItems={menuItems}>
         {renderContent()}
-      </Layout>
+      </Layout> */}
+
+      <Layout>{renderContent()}</Layout>
     </PrimeReactProvider>
   );
 };

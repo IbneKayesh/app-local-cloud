@@ -1,12 +1,6 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useState } from "react";
-import path from "path";
 import { getApiBaseUrl } from "../utils/api";
-import {
-  formatBytes,
-  formatLocalDateTime,
-  getFileType,
-} from "../utils/sanitize";
 
 const useCloud = () => {
   const [drives, setDrives] = useState([]);
@@ -18,7 +12,9 @@ const useCloud = () => {
 
   const breadCrumbHome = { icon: "pi pi-home", url: "/" };
   const [breadCrumbItems, setBreadCrumbItems] = useState([]);
+  const [pathCounts, setPathCounts] = useState({});
 
+  const [diskStorageView, setDiskStorageView] = useState(false);
   const [recentContents, setRecentContents] = useState([]);
 
   const [renameDlg, setRenameDlg] = useState(false);
@@ -87,12 +83,14 @@ const useCloud = () => {
     //console.log("path " + JSON.stringify(path));
 
     loadPath(path.path);
+    setDiskStorageView(false);
   };
 
   const loadPath = async (path) => {
     if (!baseUrl) return;
     setLoading(true);
     setError(null);
+
     setCurrentPath(path);
     setCurrentPathContents([]);
 
@@ -100,7 +98,6 @@ const useCloud = () => {
 
     //console.log("path " + path);
 
-    updateBreadcrumbs(path);
     addRecentFolder(path);
 
     setSelectedItem(null);
@@ -117,6 +114,15 @@ const useCloud = () => {
       //console.log("data " + JSON.stringify(data));
 
       setCurrentPathContents(data.items);
+
+      // ✅ Store item count for this path
+      setPathCounts((prev) => ({
+        ...prev,
+        [normalizePath(path)]: data.items.length,
+      }));
+
+      //update breadcrumb path
+      updateBreadcrumbs(path, data.items.length);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -165,30 +171,33 @@ const useCloud = () => {
     });
   };
 
-  const updateBreadcrumbs = (fullPath) => {
+  const updateBreadcrumbs = (fullPath, counts) => {
+    // Normalize fullPath by removing trailing backslash
+    fullPath = fullPath.replace(/\\$/, "");
+
     const parts = fullPath.split("\\").filter(Boolean); // Split by backslash and remove empty strings
     const breadcrumbs = [];
 
     let accumulatedPath = parts[0]; // Start with drive letter, e.g., 'D:'
-
     const drivePath = accumulatedPath;
+    const driveCount = pathCounts[normalizePath(drivePath + "\\")];
+
     breadcrumbs.push({
-      label: accumulatedPath,
-      command: () => loadPath(drivePath),
+      label: `${accumulatedPath}  (${driveCount ? driveCount : counts})`,
+      command: () => loadPath(drivePath + "\\"),
     });
 
     for (let i = 1; i < parts.length; i++) {
       accumulatedPath += "\\" + parts[i];
       const path = accumulatedPath;
+
+      const count = pathCounts[normalizePath(path)];
+
       breadcrumbs.push({
-        label: parts[i],
+        label: `${parts[i]} (${count ? count : counts})`,
         command: () => loadPath(path),
       });
     }
-
-    //console.log("breadcrumbs " + JSON.stringify(breadcrumbs));
-    //console.log("accumulatedPath " + accumulatedPath);
-
     setBreadCrumbItems(breadcrumbs);
   };
 
@@ -359,7 +368,7 @@ const useCloud = () => {
       const formData = new FormData();
       formData.append("file", files[0]); // assuming single file
 
-      console.log("Uploading file to path:", currentPath);
+      //console.log("Uploading file to path:", currentPath);
 
       const res = await fetch(
         `${baseUrl}/filesystem/upload?currentPath=${encodeURIComponent(
@@ -417,7 +426,7 @@ const useCloud = () => {
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
-      console.log("rowData " + JSON.stringify(rowData));
+      // console.log("rowData " + JSON.stringify(rowData));
       const data = await res.json();
       if (data.success) {
         setMoveDlg(false);
@@ -529,6 +538,8 @@ const useCloud = () => {
 
     breadCrumbHome,
     breadCrumbItems,
+    diskStorageView,
+    setDiskStorageView,
     recentContents,
     handleBtnItemDownloadClick,
 

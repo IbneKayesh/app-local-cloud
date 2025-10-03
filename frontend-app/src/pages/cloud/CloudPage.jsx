@@ -1,9 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { Button } from "primereact/button";
 import { BreadCrumb } from "primereact/breadcrumb";
-import { SplitButton } from "primereact/splitbutton";
 import { Dialog } from "primereact/dialog";
-import { InputText } from "primereact/inputtext";
 
 //internal imports
 import useCloud from "@/hooks/useCloud";
@@ -38,6 +36,8 @@ const CloudPage = () => {
     handleBtnRecentBtnClick,
     breadCrumbHome,
     breadCrumbItems,
+    diskStorageView,
+    setDiskStorageView,
     recentContents,
     handleBtnItemDownloadClick,
     //rename
@@ -211,122 +211,34 @@ const CloudPage = () => {
 
   return (
     <>
-      {console.log("recentContents" + recentContents)}
-      {recentContents && (
+      {diskStorageView && (
         <DriveComponent
           drives={drives}
           handleDriveBtnClick={handleDriveBtnClick}
         />
       )}
 
-      <ToolbarComponent />
-
-      <div className="card flex flex-wrap justify-content-center gap-1 my-1">
-        <Button
-          label="Upload"
-          icon="pi pi-upload"
-          size="small"
-          onClick={(e) => {
-            handleUploaderDlgClick(e);
-          }}
-        />
-        <Button
-          label="Create New Folder"
-          icon="pi pi-folder"
-          size="small"
-          onClick={(e) => {
-            handleNewFolderDlgClick(e);
-          }}
-        />
-        <SplitButton
-          icon="pi pi-table"
-          size="small"
-          onClick={() => setItemViewMode("table")}
-          model={viewModeItems}
-        />
-
-        {itemViewMode === "grouped" && (
-          <Button
-            label={`Group by ${
-              groupBy === "type"
-                ? "Type"
-                : groupBy === "extension"
-                ? "Extension"
-                : "Date"
-            }`}
-            severity="secondary"
-            size="small"
-            onClick={() => {
-              const nextField =
-                groupBy === "type"
-                  ? "extension"
-                  : groupBy === "extension"
-                  ? "date"
-                  : "type";
-              setGroupBy(nextField);
-            }}
-          />
-        )}
-
-        {itemViewMode === "grid" && (
-          <>
-            <Button
-              label={`Sort by ${
-                sortField === "name"
-                  ? "Name"
-                  : sortField === "size"
-                  ? "Size"
-                  : "Modified"
-              }`}
-              severity="secondary"
-              size="small"
-              onClick={() => {
-                const nextField =
-                  sortField === "name"
-                    ? "size"
-                    : sortField === "size"
-                    ? "mtime"
-                    : "name";
-                setSortField(nextField);
-                setSortOrder(1);
-              }}
-            />
-            <Button
-              label={sortOrder === 1 ? "Asc" : "Desc"}
-              severity="secondary"
-              size="small"
-              onClick={() => setSortOrder(sortOrder === 1 ? -1 : 1)}
-            />
-          </>
-        )}
-        <Button
-          icon="pi pi-search"
-          size="small"
-          onClick={(e) => {
-            handleSearchDlgClick(e);
-          }}
-        />
-        <InputText
-          placeholder="Search files/folders"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{ width: "200px" }}
-          size="small"
-          clearable
-        />
-
-        <Button
-          icon={showRecent ? "pi pi-history" : "pi pi-clock"}
-          size="small"
-          onClick={() => setShowRecent(!showRecent)}
-        />
-
-        <Button
-          icon={showDetail ? "pi pi-window-maximize" : "pi pi-window-minimize"}
-          size="small"
-          onClick={() => setShowDetail(!showDetail)}
-        />
-      </div>
+      <ToolbarComponent
+        diskStorageView={diskStorageView}
+        setDiskStorageView={setDiskStorageView}
+        handleUploaderDlgClick={handleUploaderDlgClick}
+        handleNewFolderDlgClick={handleNewFolderDlgClick}
+        itemViewMode={itemViewMode}
+        setItemViewMode={setItemViewMode}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        handleSearchDlgClick={handleSearchDlgClick}
+        showRecent={showRecent}
+        setShowRecent={setShowRecent}
+        showDetail={showDetail}
+        setShowDetail={setShowDetail}
+        groupBy={groupBy}
+        setGroupBy={setGroupBy}
+        sortField={sortField}
+        setSortField={setSortField}
+        sortOrder={sortOrder}
+        setSortOrder={setSortOrder}
+      />
 
       {showRecent && (
         <div className="card flex flex-wrap justify-content-center gap-1 my-1">
@@ -351,32 +263,32 @@ const CloudPage = () => {
           return (
             <div className="card flex flex-wrap justify-content-center gap-1 my-1">
               <Button
-                label="View"
+                tooltip="Quick View"
                 icon="pi pi-eye"
                 size="small"
                 disabled={fileType === "other"}
                 onClick={() => handleBtnSetPreviewClick(selectedItem)}
               />
               <Button
-                label="Download"
+                tooltip="Download"
                 icon="pi pi-download"
                 size="small"
                 onClick={() => handleBtnItemDownloadClick(selectedItem)}
               />
               <Button
-                label="Rename"
+                tooltip="Rename"
                 icon="pi pi-pencil"
                 size="small"
                 onClick={() => handleRenameDlgClick(selectedItem)}
               />
               <Button
-                label="Move"
+                tooltip="Move"
                 icon="pi pi-arrows-alt"
                 size="small"
                 onClick={() => handleMoveDlgClick(selectedItem)}
               />
               <Button
-                label="Delete"
+                tooltip="Delete"
                 icon="pi pi-trash"
                 size="small"
                 severity="danger"
@@ -387,55 +299,64 @@ const CloudPage = () => {
         })()}
 
       <BreadCrumb model={breadCrumbItems} home={breadCrumbHome} />
-      <div className="grid">
-        <div className={showDetail ? "col-8" : "col-12"}>
-          {itemViewMode === "table" && (
-            <TableViewComponent
-              filteredSortedContents={filteredSortedContents}
-              handleItemRowClick={handleItemRowClick}
-              name_body={name_body}
-              size_body={size_body}
-              mtime_body={mtime_body}
-              selectedItem={selectedItem}
-              setSelectedItem={setSelectedItem}
-            />
-          )}
+      {loading ? (
+        <div
+          className="flex justify-content-center align-items-center"
+          style={{ height: "200px" }}
+        >
+          <strong>Loading.... </strong>
+        </div>
+      ) : (
+        <div className="grid">
+          <div className={showDetail ? "col-8" : "col-12"}>
+            {itemViewMode === "table" && (
+              <TableViewComponent
+                filteredSortedContents={filteredSortedContents}
+                handleItemRowClick={handleItemRowClick}
+                name_body={name_body}
+                size_body={size_body}
+                mtime_body={mtime_body}
+                selectedItem={selectedItem}
+                setSelectedItem={setSelectedItem}
+              />
+            )}
 
-          {itemViewMode === "grouped" && (
-            <TableGroupViewComponent
-              filteredSortedContents={filteredSortedContents}
-              handleItemRowClick={handleItemRowClick}
-              name_body={name_body}
-              size_body={size_body}
-              mtime_body={mtime_body}
-              selectedItem={selectedItem}
-              setSelectedItem={setSelectedItem}
-            />
-          )}
+            {itemViewMode === "grouped" && (
+              <TableGroupViewComponent
+                filteredSortedContents={filteredSortedContents}
+                handleItemRowClick={handleItemRowClick}
+                name_body={name_body}
+                size_body={size_body}
+                mtime_body={mtime_body}
+                selectedItem={selectedItem}
+                setSelectedItem={setSelectedItem}
+              />
+            )}
 
-          {itemViewMode === "grid" && (
-            <GridViewComponent
-              filteredSortedContents={filteredSortedContents}
-              handleItemRowClick={handleItemRowClick}
-              size_body={size_body}
-              mtime_body={mtime_body}
-              selectedItem={selectedItem}
-              setSelectedItem={setSelectedItem}
-            />
+            {itemViewMode === "grid" && (
+              <GridViewComponent
+                filteredSortedContents={filteredSortedContents}
+                handleItemRowClick={handleItemRowClick}
+                size_body={size_body}
+                mtime_body={mtime_body}
+                selectedItem={selectedItem}
+                setSelectedItem={setSelectedItem}
+              />
+            )}
+          </div>
+
+          {showDetail && (
+            <div className="col-4">
+              <DetailsPaneComponent
+                selectedItem={selectedItem}
+                size_body={size_body}
+                mtime_body={mtime_body}
+                setShowDetail={setShowDetail}
+              />
+            </div>
           )}
         </div>
-
-        {showDetail && (
-          <div className="col-4">
-            <DetailsPaneComponent
-              selectedItem={selectedItem}
-              size_body={size_body}
-              mtime_body={mtime_body}
-            />
-          </div>
-        )}
-      </div>
-
+      )}
       <RenameComponent
         renameDlg={renameDlg}
         setRenameDlg={setRenameDlg}
