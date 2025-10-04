@@ -53,6 +53,10 @@ const useCloud = () => {
   const [searchDlg, setSearchDlg] = useState(false);
   const [searchFromData, setSearchFromData] = useState({});
 
+  //compress
+  const [compressDlg, setCompressDlg] = useState(false);
+  const [compressFromData, setCompressFromData] = useState({});
+
   useEffect(() => {
     getApiBaseUrl().then(setBaseUrl);
   }, []);
@@ -485,7 +489,7 @@ const useCloud = () => {
 
         setCurrentPathContents(data.items);
       } else {
-        setError("Rename failed: " + data.message);
+        setError("Search failed: " + data.message);
       }
     } catch (err) {
       setError(err.message);
@@ -557,7 +561,41 @@ const useCloud = () => {
   }, [currentPathContents, searchTerm, sortField, sortOrder, groupBy]);
 
   //compress
-  const handleCompressDlgClick = async () => {};
+  const handleCompressDlgClick = () => {
+    setCompressDlg(true);
+  };
+  const handleCompressBtnClick = async () => {
+    console.log("selectedItem " + JSON.stringify(selectedItem));
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`${baseUrl}/filesystem/zip`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          path: selectedItem.path,
+        }),
+      });
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      // console.log("rowData " + JSON.stringify(rowData));
+      const data = await res.json();
+      if (data.success) {
+        setCompressDlg(false);
+        loadPath(currentPath); // Refresh the current path
+      } else {
+        setError("Move failed: " + data.message);
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleUnCompressDlgClick = async () => {};
   return {
     loading,
@@ -655,7 +693,10 @@ const useCloud = () => {
     setShowRecent,
 
     //compress
+    compressDlg,
+    setCompressDlg,
     handleCompressDlgClick,
+    handleCompressBtnClick,
     handleUnCompressDlgClick,
   };
 };

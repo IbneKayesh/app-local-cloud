@@ -2,9 +2,8 @@ import React, { useState } from "react";
 import { PrimeReactProvider } from "primereact/api";
 
 import Layout from "./Layout";
-import HomePage from "./pages/HomePage";
 import CloudPage from "./pages/cloud/CloudPage";
-import AboutPage from "./pages/AboutPage";
+import SettingsPage from "./pages/settings/SettingsPage";
 
 const App = () => {
   const [selectedKey, setSelectedKey] = useState("1");
@@ -12,39 +11,16 @@ const App = () => {
   const renderContent = () => {
     switch (selectedKey) {
       case "1":
-        return <CloudPage />;
+        return <CloudPage setSelectedKey={setSelectedKey} />;
       case "2":
-        return <AboutPage />;
-      case "0":
+        return <SettingsPage setSelectedKey={setSelectedKey} />;
       default:
-        return <HomePage />;
+        return <CloudPage setSelectedKey={setSelectedKey} />;
     }
   };
 
-  const menuItems = [
-    {
-      label: "Home",
-      icon: "pi pi-home",
-      command: () => setSelectedKey("0"),
-    },
-    {
-      label: "Cloud",
-      icon: "pi pi-cloud",
-      command: () => setSelectedKey("1"),
-    },
-    {
-      label: "About",
-      icon: "pi pi-user",
-      command: () => setSelectedKey("2"),
-    },
-  ];
-
   return (
     <PrimeReactProvider>
-      {/* <Layout menuItems={menuItems}>
-        {renderContent()}
-      </Layout> */}
-
       <Layout>{renderContent()}</Layout>
     </PrimeReactProvider>
   );

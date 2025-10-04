@@ -8,8 +8,8 @@ const DriveComponent = ({ drives, handleDriveBtnClick }) => {
     <div className="grid">
       {drives.map((d) => {
         const used = d.used || 0;
-        const total = d.total || 100;
-        const percentUsed = Math.round((used / total) * 100);
+        const limit = d.limit || 100;
+        const percentUsed = Math.round((used / limit) * 100);
 
         return (
           <div key={d.letter} className="col-12 sm:col-4 md:col-2 lg:col-2">
@@ -24,7 +24,7 @@ const DriveComponent = ({ drives, handleDriveBtnClick }) => {
               }
             >
               <div className="mb-2">
-                <small>{`${used} GB used of ${total} GB`}</small>
+                <small>{`${used} GB used of ${limit} GB`}</small>
               </div>
               <ProgressBar
                 value={percentUsed}

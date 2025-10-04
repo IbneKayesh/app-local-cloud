@@ -1,8 +1,26 @@
 {
   "drives": [
-    { "letter": "D:", "path": "D:\\", "used": 50, "total": 100 },
-    { "letter": "E:", "path": "E:\\", "used": 10, "total": 50 },
-    { "letter": "F:", "path": "F:\\", "used": 80, "total": 120 }
+    {
+      "letter": "D:",
+      "path": "D:\\",
+      "used": 40,
+      "limit": 50,
+      "enabled": true
+    },
+    {
+      "letter": "E:",
+      "path": "E:\\",
+      "used": 10,
+      "limit": 50,
+      "enabled": true
+    },
+    {
+      "letter": "F:",
+      "path": "F:\\",
+      "used": 30,
+      "limit": 50,
+      "enabled": true
+    }
   ],
   "hidden": [
     { "name": "System Volume Information" },

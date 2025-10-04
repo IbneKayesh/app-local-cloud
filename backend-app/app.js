@@ -49,7 +49,10 @@ app.use(express.json());
 
 // Routes
 const fileSystemRoutes = require("./routes/fileSystem")();
+const userRoutes = require("./routes/userRoutes");
+
 app.use("/api/filesystem", fileSystemRoutes);
+app.use("/api/users", userRoutes);
 
 // Serve React build
 app.use(express.static(path.join(__dirname, "dist")));

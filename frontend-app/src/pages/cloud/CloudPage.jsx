@@ -21,8 +21,9 @@ import DriveComponent from "./DriveComponent";
 import ToolbarComponent from "./ToolbarComponent";
 import PreviewComponent from "./PreviewComponent";
 import SearchComponent from "./SearchComponent";
+import CompressComponent from "./CompressComponent";
 
-const CloudPage = () => {
+const CloudPage = ({ setSelectedKey }) => {
   const {
     loading,
     error,
@@ -116,7 +117,10 @@ const CloudPage = () => {
     setShowRecent,
 
     //compress
+    compressDlg,
+    setCompressDlg,
     handleCompressDlgClick,
+    handleCompressBtnClick,    
     handleUnCompressDlgClick,
   } = useCloud();
 
@@ -164,6 +168,7 @@ const CloudPage = () => {
         setSortField={setSortField}
         sortOrder={sortOrder}
         setSortOrder={setSortOrder}
+        setSelectedKey={setSelectedKey}
       />
 
       {showRecent && (
@@ -192,6 +197,7 @@ const CloudPage = () => {
                 tooltip="Quick View"
                 icon="pi pi-eye"
                 size="small"
+                severity="help"
                 disabled={fileType === "other"}
                 onClick={() => handleBtnSetPreviewClick(selectedItem)}
               />
@@ -199,36 +205,45 @@ const CloudPage = () => {
                 tooltip="Share"
                 icon="pi pi-share-alt"
                 size="small"
-                onClick={() => {}}
+                severity="help"
+                onClick={() => {
+                  //need to implement
+                }}
               />
               <Button
                 tooltip="Download"
                 icon="pi pi-download"
                 size="small"
+                severity="help"
                 onClick={() => handleBtnItemDownloadClick(selectedItem)}
               />
               <Button
                 tooltip="Rename"
                 icon="pi pi-pencil"
                 size="small"
+                severity="help"
                 onClick={() => handleRenameDlgClick(selectedItem)}
               />
               <Button
                 tooltip="Move"
                 icon="pi pi-arrows-alt"
                 size="small"
+                severity="help"
                 onClick={() => handleMoveDlgClick(selectedItem)}
               />
               <Button
                 tooltip="Compress"
                 icon="pi pi-folder"
                 size="small"
+                severity="help"
                 onClick={() => handleCompressDlgClick(selectedItem)}
+                disabled={!selectedItem.isDirectory}
               />
               <Button
                 tooltip="Uncompress"
                 icon="pi pi-folder-open"
                 size="small"
+                severity="help"
                 onClick={() => handleUnCompressDlgClick(selectedItem)}
                 disabled={fileType !== "zip"}
               />
@@ -236,6 +251,7 @@ const CloudPage = () => {
                 tooltip="Move to Bin"
                 icon="pi pi-trash"
                 size="small"
+                severity="help"
                 onClick={() => {
                   //need to implement
                 }}
@@ -359,6 +375,13 @@ const CloudPage = () => {
         searchFromData={searchFromData}
         setSearchFromData={setSearchFromData}
         handleSearchBtnClick={handleSearchBtnClick}
+      />
+
+      <CompressComponent
+        compressDlg={compressDlg}
+        setCompressDlg={setCompressDlg}
+        handleCompressBtnClick={handleCompressBtnClick}
+        selectedItem={selectedItem}
       />
     </>
   );

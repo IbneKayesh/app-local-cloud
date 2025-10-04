@@ -26,6 +26,7 @@ const ToolbarComponent = ({
   setSortField,
   sortOrder,
   setSortOrder,
+  setSelectedKey,
 }) => {
   const startContent = (
     <React.Fragment>
@@ -216,10 +217,8 @@ const ToolbarComponent = ({
         tooltipOptions={{ position: "left" }}
         icon="pi pi-cog"
         size="small"
-        onClick={() => {
-          //need to implement
-          //it will goes to another page
-        }}
+        severity="info"
+        onClick={() => setSelectedKey("2")}
       />
     </React.Fragment>
   );

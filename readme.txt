@@ -1,15 +1,24 @@
 Features:
-1. Add/Remove/List HDD or SSD drives
-2. File and Folder Listing [Name with icon, Size, Last Modified, Actions]
-3. Create a new Folder
-4. Upload a file
-5. Navigate sub directory by clicking parent folder
-6. Clickable Breadcrumb directory path link
-7. Delete file and folder
-8. Rename file and folder
-9. Download folder as ZIP file
-10. Search file and folders
-11. Recent files/folders
+- Add/Remove/List HDD/SSD drives
+- File/Folder Listing, Browsing [Name with icon, Size, Last Modified, Actions]
+- Table / Group Table  / Grid View, Sorting
+- Create a new Folder, Upload Files
+- Download Folder (Zip), Download File
+- Clickable Breadcrumb directory path link
+- Delete file / folder
+- Rename file / folder
+- Move file / folder to another location
+- Search file and folders
+- Recent files/folders
+- Quick View Common files
+- View file/folder details
+
+In Progress
+- Compress / Uncompress file / folder
+- Move file / folder to Bin, Restore from Bin
+- Share with user
+- Share with me
+- Favorites file / folder
 
 
 I've choose below options for my project:
