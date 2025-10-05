@@ -9,6 +9,7 @@ import { Toolbar } from "primereact/toolbar";
 const ToolbarComponent = ({
   diskStorageView,
   setDiskStorageView,
+  handleRefreshDlgClick,
   handleUploaderDlgClick,
   handleNewFolderDlgClick,
   itemViewMode,
@@ -36,6 +37,15 @@ const ToolbarComponent = ({
         className="mr-2"
         size="small"
         onClick={() => setDiskStorageView(!diskStorageView)}
+      />
+      <Button
+        tooltip="Reload"
+        icon="pi pi-refresh"
+        className="mr-2"
+        size="small"
+        onClick={(e) => {
+          handleRefreshDlgClick(e);
+        }}
       />
       <Button
         tooltip="Upload"
@@ -68,42 +78,6 @@ const ToolbarComponent = ({
         className="mr-2"
         size="small"
         onClick={() => setShowDetail(!showDetail)}
-      />
-      <Button
-        tooltip="Favorites"
-        icon="pi pi-star"
-        className="mr-2"
-        size="small"
-        onClick={() => {
-          //need to implement
-        }}
-      />
-      <Button
-        tooltip="Shared"
-        icon="pi pi-share-alt"
-        className="mr-2"
-        size="small"
-        onClick={() => {
-          //need to implement
-        }}
-      />
-      <Button
-        tooltip="Shared with me"
-        icon="pi pi-users"
-        className="mr-2"
-        size="small"
-        onClick={() => {
-          //need to implement
-        }}
-      />
-      <Button
-        tooltip="Bin"
-        icon="pi pi-trash"
-        className="mr-2"
-        size="small"
-        onClick={() => {
-          //need to implement
-        }}
       />
     </React.Fragment>
   );

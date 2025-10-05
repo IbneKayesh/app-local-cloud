@@ -3,10 +3,10 @@ import { useState } from "react";
 import { getApiBaseUrl } from "../utils/api";
 
 const useCloud = () => {
-  const [drives, setDrives] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [baseUrl, setBaseUrl] = useState(null);
+  const [drives, setDrives] = useState([]);
   const [currentPath, setCurrentPath] = useState(null);
   const [currentPathContents, setCurrentPathContents] = useState([]);
 
@@ -14,15 +14,15 @@ const useCloud = () => {
   const [breadCrumbItems, setBreadCrumbItems] = useState([]);
   const [pathCounts, setPathCounts] = useState({});
 
-  const [diskStorageView, setDiskStorageView] = useState(false);
+  const [diskStorageView, setDiskStorageView] = useState(true);
   const [recentContents, setRecentContents] = useState([]);
 
   const [renameDlg, setRenameDlg] = useState(false);
   const [renameFromData, setRenameFromData] = useState({});
   const [renameItem, setRenameItem] = useState(null);
 
+  const [deleteBinDlg, setDeleteBinDlg] = useState(false);
   const [deleteDlg, setDeleteDlg] = useState(false);
-  const [deleteFromData, setDeleteFromData] = useState({});
 
   const [newFolderDlg, setNewFolderDlg] = useState(false);
   const [newFolderFromData, setNewFolderFromData] = useState({});
@@ -55,7 +55,7 @@ const useCloud = () => {
 
   //compress
   const [compressDlg, setCompressDlg] = useState(false);
-  const [compressFromData, setCompressFromData] = useState({});
+  const [unCompressDlg, setUnCompressDlg] = useState(false);
 
   useEffect(() => {
     getApiBaseUrl().then(setBaseUrl);
@@ -288,13 +288,11 @@ const useCloud = () => {
     }
   };
 
-  const handleDeleteDlgClick = (rowData) => {
-    //console.log("rowData " + JSON.stringify(rowData));
-    setDeleteDlg(true);
-    setDeleteFromData(rowData);
+  const handleDeleteBinDlgClick = () => {
+    setDeleteBinDlg(true);
   };
 
-  const handleDeleteBtnClick = async () => {
+  const handleDeleteBinBtnClick = async () => {
     setLoading(true);
     setError(null);
 
@@ -303,7 +301,42 @@ const useCloud = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          path: `${currentPath}\\${deleteFromData.name}`,
+          path: `${currentPath}\\${selectedItem.name}`,
+        }),
+      });
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      const data = await res.json();
+      if (data.success) {
+        setDeleteBinDlg(false);
+        loadPath(currentPath); // Refresh the current path
+      } else {
+        setError("Delete failed: " + data.message);
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  
+  const handleDeleteDlgClick = () => {
+    setDeleteDlg(true);
+  };
+
+  const handleDeleteBtnClick = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`${baseUrl}/filesystem/delete-permanent`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          path: `${currentPath}\\${selectedItem.name}`,
         }),
       });
       if (!res.ok) {
@@ -314,7 +347,7 @@ const useCloud = () => {
         setDeleteDlg(false);
         loadPath(currentPath); // Refresh the current path
       } else {
-        setError("Rename failed: " + data.message);
+        setError("Delete failed: " + data.message);
       }
     } catch (err) {
       setError(err.message);
@@ -565,7 +598,7 @@ const useCloud = () => {
     setCompressDlg(true);
   };
   const handleCompressBtnClick = async () => {
-    console.log("selectedItem " + JSON.stringify(selectedItem));
+    //console.log("selectedItem " + JSON.stringify(selectedItem));
 
     setLoading(true);
     setError(null);
@@ -587,7 +620,7 @@ const useCloud = () => {
         setCompressDlg(false);
         loadPath(currentPath); // Refresh the current path
       } else {
-        setError("Move failed: " + data.message);
+        setError("Zip failed: " + data.message);
       }
     } catch (err) {
       setError(err.message);
@@ -596,7 +629,49 @@ const useCloud = () => {
     }
   };
 
-  const handleUnCompressDlgClick = async () => {};
+  const handleUnCompressDlgClick = () => {
+    setUnCompressDlg(true);
+  };
+
+  const handleUnCompressBtnClick = async () => {
+    //console.log("selectedItem " + JSON.stringify(selectedItem));
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`${baseUrl}/filesystem/unzip`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          zipPath: selectedItem.path,
+          destination: currentPath,
+        }),
+      });
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      //console.log("rowData " + JSON.stringify(rowData));
+      const data = await res.json();
+      if (data.success) {
+        setUnCompressDlg(false);
+        loadPath(currentPath); // Refresh the current path
+      } else {
+        setError("Unzip failed: " + data.message);
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRefreshDlgClick = async () => {
+    // console.log("currentPath " + currentPath)
+    if (!currentPath) return;
+    loadPath(currentPath); // Refresh the current path
+  };
+
   return {
     loading,
     error,
@@ -616,6 +691,7 @@ const useCloud = () => {
     setDiskStorageView,
     recentContents,
     handleBtnItemDownloadClick,
+    handleRefreshDlgClick,
 
     //rename
     handleRenameDlgClick,
@@ -625,11 +701,16 @@ const useCloud = () => {
     setRenameFromData,
     handleRenameBtnClick,
 
+    //delete bin
+    handleDeleteBinDlgClick,
+    deleteBinDlg,
+    setDeleteBinDlg,
+    handleDeleteBinBtnClick,
+
     //delete
     handleDeleteDlgClick,
     deleteDlg,
     setDeleteDlg,
-    deleteFromData,
     handleDeleteBtnClick,
 
     //new folder
@@ -697,7 +778,10 @@ const useCloud = () => {
     setCompressDlg,
     handleCompressDlgClick,
     handleCompressBtnClick,
+    unCompressDlg,
+    setUnCompressDlg,
     handleUnCompressDlgClick,
+    handleUnCompressBtnClick,
   };
 };
 export default useCloud;

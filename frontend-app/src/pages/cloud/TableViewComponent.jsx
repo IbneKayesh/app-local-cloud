@@ -2,6 +2,7 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 
 const TableViewComponent = ({
+  rowClass,
   filteredSortedContents,
   handleItemRowClick,
   name_body,
@@ -12,6 +13,7 @@ const TableViewComponent = ({
 }) => {
   return (
     <DataTable
+      rowClassName={rowClass}
       value={filteredSortedContents}
       scrollable
       scrollHeight="500px"
@@ -25,6 +27,7 @@ const TableViewComponent = ({
       selection={selectedItem}
       onSelectionChange={(e) => setSelectedItem(e.value)}
       className="hover"
+      stripedRows
     >
       <Column selectionMode="single" headerStyle={{ width: "3rem" }}></Column>
       <Column field="name" header="Name" body={name_body} sortable></Column>

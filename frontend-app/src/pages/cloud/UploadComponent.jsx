@@ -10,6 +10,7 @@ const UploadComponent = ({
   setUploaderDlg,
   baseUrl,
   currentPath,
+  handleRefreshDlgClick,
 }) => {
   const toast = useRef(null);
   const [selectedCount, setSelectedCount] = useState(0);
@@ -22,7 +23,7 @@ const UploadComponent = ({
       summary: `Upload Complete (${count} file${count > 1 ? "s" : ""})`,
       detail: uploadedNames,
     });
-    // loadPath(currentPath);
+    handleRefreshDlgClick();
     setSelectedCount(0);
   };
 

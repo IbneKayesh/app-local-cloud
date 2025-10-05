@@ -41,7 +41,6 @@ const SearchComponent = ({
               label="Go"
               severity="primary"
               icon="pi pi-search"
-              style={{ marginLeft: "0.5rem" }}
               onClick={handleSearchBtnClick}
             />
           </div>

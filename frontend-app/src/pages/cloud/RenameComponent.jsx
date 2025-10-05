@@ -42,7 +42,6 @@ const RenameComponent = ({
               label="Done"
               severity="primary"
               icon="pi pi-check"
-              style={{ marginLeft: "0.5rem" }}
               onClick={handleRenameBtnClick}
             />
           </div>

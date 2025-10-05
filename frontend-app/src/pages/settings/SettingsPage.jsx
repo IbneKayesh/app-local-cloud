@@ -2,7 +2,6 @@ import { TabView, TabPanel } from "primereact/tabview";
 import React, { useState } from "react";
 import { Button } from "primereact/button";
 import AboutPage from "./about/AboutPage";
-import UserPage from "./users/UserPage";
 
 const SettingsPage = ({ setSelectedKey }) => {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -24,13 +23,6 @@ const SettingsPage = ({ setSelectedKey }) => {
           label="2"
         />
         <Button
-          onClick={() => setActiveIndex(2)}
-          className="w-2rem h-2rem p-0"
-          rounded
-          outlined={activeIndex !== 2}
-          label="3"
-        />
-        <Button
           onClick={() => setSelectedKey(1)}
           className="w-2rem h-2rem p-0"
           rounded
@@ -45,11 +37,7 @@ const SettingsPage = ({ setSelectedKey }) => {
         onTabChange={(e) => setActiveIndex(e.index)}
       >
         <TabPanel header="Cloud" leftIcon="pi pi-cloud mr-2">
-          Disk and Drives
-          
-        </TabPanel>
-        <TabPanel header="Users" leftIcon="pi pi-users mr-2">
-          <UserPage />
+          Disk and Drives Management
         </TabPanel>
         <TabPanel header="About" leftIcon="pi pi-at mr-2">
           <AboutPage />

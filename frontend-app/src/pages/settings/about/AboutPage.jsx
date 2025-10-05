@@ -23,7 +23,7 @@ const AboutPage = () => {
         </div>
         <Divider />
         <div className="p-field">
-          <strong>Database:</strong> SQLite3
+          <strong>Developer:</strong> ibnekayesh91@gmail.com
         </div>
         <Divider />
         <Panel header="License" toggleable collapsed>

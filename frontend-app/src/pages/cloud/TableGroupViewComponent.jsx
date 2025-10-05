@@ -1,8 +1,10 @@
+
 import { Button } from "primereact/button";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 
 const TableGroupViewComponent = ({
+  rowClass,
   filteredSortedContents,
   handleItemRowClick,
   name_body,
@@ -14,6 +16,7 @@ const TableGroupViewComponent = ({
   return (
     <>
       <DataTable
+        rowClassName={rowClass}
         value={filteredSortedContents}
         tableStyle={{ minWidth: "50rem" }}
         onRowClick={(e) => {
@@ -25,14 +28,21 @@ const TableGroupViewComponent = ({
         sortMode="single"
         rowGroupHeaderTemplate={(data) => {
           const groupName = data.group;
-          const groupCount = filteredSortedContents.filter(item => item.group === groupName).length;
-          return <span>{groupName} ({groupCount})</span>;
+          const groupCount = filteredSortedContents.filter(
+            (item) => item.group === groupName
+          ).length;
+          return (
+            <span>
+              {groupName} ({groupCount})
+            </span>
+          );
         }}
         removableSort
         dataKey="name"
         selectionMode={"radiobutton"}
         selection={selectedItem}
         onSelectionChange={(e) => setSelectedItem(e.value)}
+        stripedRows
       >
         <Column selectionMode="single" headerStyle={{ width: "3rem" }}></Column>
         <Column field="name" header="Name" body={name_body} sortable></Column>

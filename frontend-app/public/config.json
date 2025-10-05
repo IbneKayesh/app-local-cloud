@@ -1,5 +1,4 @@
 {
-  "apiBaseUrl1": "http://localhost:8085/api",
-  "apiBaseUrl2": " http://192.168.0.129:8085/api",
-  "apiBaseUrl": " http://192.168.0.129:8085/api"
+  "apiBaseUrl1": "http://localhost:7071/api",
+  "apiBaseUrl": " http://192.168.0.129:7071/api"
 }

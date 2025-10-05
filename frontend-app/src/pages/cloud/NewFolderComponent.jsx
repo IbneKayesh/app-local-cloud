@@ -41,7 +41,6 @@ const NewFolderComponent = ({
               label="Done"
               severity="primary"
               icon="pi pi-check"
-              style={{ marginLeft: "0.5rem" }}
               onClick={handleNewFolderBtnClick}
             />
           </div>

@@ -1,30 +1,248 @@
 {
   "drives": [
     {
+      "letter": "A:",
+      "path": "A:\\",
+      "used": 0,
+      "usedPercent": 0,
+      "free": 0,
+      "limit": 0,
+      "enabled": true
+    },
+    {
+      "letter": "B:",
+      "path": "B:\\",
+      "used": 0,
+      "usedPercent": 0,
+      "free": 0,
+      "limit": 0,
+      "enabled": true
+    },
+    {
+      "letter": "C:",
+      "path": "C:\\",
+      "used": 0,
+      "usedPercent": 0,
+      "free": 0,
+      "limit": 0,
+      "enabled": true
+    },
+    {
       "letter": "D:",
       "path": "D:\\",
-      "used": 40,
-      "limit": 50,
+      "used": 0,
+      "usedPercent": 0,
+      "free": 0,
+      "limit": 0,
       "enabled": true
     },
     {
       "letter": "E:",
       "path": "E:\\",
-      "used": 10,
-      "limit": 50,
+      "used": 0,
+      "usedPercent": 0,
+      "free": 0,
+      "limit": 0,
       "enabled": true
     },
     {
       "letter": "F:",
       "path": "F:\\",
-      "used": 30,
-      "limit": 50,
+      "used": 0,
+      "usedPercent": 0,
+      "free": 0,
+      "limit": 0,
+      "enabled": true
+    },
+    {
+      "letter": "G:",
+      "path": "G:\\",
+      "used": 0,
+      "usedPercent": 0,
+      "free": 0,
+      "limit": 0,
+      "enabled": true
+    },
+    {
+      "letter": "H:",
+      "path": "H:\\",
+      "used": 0,
+      "usedPercent": 0,
+      "free": 0,
+      "limit": 0,
+      "enabled": true
+    },
+    {
+      "letter": "I:",
+      "path": "I:\\",
+      "used": 0,
+      "usedPercent": 0,
+      "free": 0,
+      "limit": 0,
+      "enabled": true
+    },
+    {
+      "letter": "J:",
+      "path": "J:\\",
+      "used": 0,
+      "usedPercent": 0,
+      "free": 0,
+      "limit": 0,
+      "enabled": true
+    },
+    {
+      "letter": "K:",
+      "path": "K:\\",
+      "used": 0,
+      "usedPercent": 0,
+      "free": 0,
+      "limit": 0,
+      "enabled": true
+    },
+    {
+      "letter": "L:",
+      "path": "L:\\",
+      "used": 0,
+      "usedPercent": 0,
+      "free": 0,
+      "limit": 0,
+      "enabled": true
+    },
+    {
+      "letter": "M:",
+      "path": "M:\\",
+      "used": 0,
+      "usedPercent": 0,
+      "free": 0,
+      "limit": 0,
+      "enabled": true
+    },
+    {
+      "letter": "N:",
+      "path": "N:\\",
+      "used": 0,
+      "usedPercent": 0,
+      "free": 0,
+      "limit": 0,
+      "enabled": true
+    },
+    {
+      "letter": "O:",
+      "path": "O:\\",
+      "used": 0,
+      "usedPercent": 0,
+      "free": 0,
+      "limit": 0,
+      "enabled": true
+    },
+    {
+      "letter": "P:",
+      "path": "P:\\",
+      "used": 0,
+      "usedPercent": 0,
+      "free": 0,
+      "limit": 0,
+      "enabled": true
+    },
+    {
+      "letter": "Q:",
+      "path": "Q:\\",
+      "used": 0,
+      "usedPercent": 0,
+      "free": 0,
+      "limit": 0,
+      "enabled": true
+    },
+    {
+      "letter": "R:",
+      "path": "R:\\",
+      "used": 0,
+      "usedPercent": 0,
+      "free": 0,
+      "limit": 0,
+      "enabled": true
+    },
+    {
+      "letter": "S:",
+      "path": "S:\\",
+      "used": 0,
+      "usedPercent": 0,
+      "free": 0,
+      "limit": 0,
+      "enabled": true
+    },
+    {
+      "letter": "T:",
+      "path": "T:\\",
+      "used": 0,
+      "usedPercent": 0,
+      "free": 0,
+      "limit": 0,
+      "enabled": true
+    },
+    {
+      "letter": "U:",
+      "path": "U:\\",
+      "used": 0,
+      "usedPercent": 0,
+      "free": 0,
+      "limit": 0,
+      "enabled": true
+    },
+    {
+      "letter": "V:",
+      "path": "V:\\",
+      "used": 0,
+      "usedPercent": 0,
+      "free": 0,
+      "limit": 0,
+      "enabled": true
+    },
+    {
+      "letter": "W:",
+      "path": "W:\\",
+      "used": 0,
+      "usedPercent": 0,
+      "free": 0,
+      "limit": 0,
+      "enabled": true
+    },
+    {
+      "letter": "X:",
+      "path": "X:\\",
+      "used": 0,
+      "usedPercent": 0,
+      "free": 0,
+      "limit": 0,
+      "enabled": true
+    },
+    {
+      "letter": "Y:",
+      "path": "Y:\\",
+      "used": 0,
+      "usedPercent": 0,
+      "free": 0,
+      "limit": 0,
+      "enabled": true
+    },
+    {
+      "letter": "Z:",
+      "path": "Z:\\",
+      "used": 0,
+      "usedPercent": 0,
+      "free": 0,
+      "limit": 0,
       "enabled": true
     }
   ],
   "hidden": [
     { "name": "System Volume Information" },
-    { "name": "$RECYCLE.BIN" }
+    { "name": "$RECYCLE.BIN" },
+    { "name": "hiberfil.sys" },
+    { "name": "swapfile.sys" },
+    { "name": "pagefile.sys" },
+    { "name": "DumpStack.log.tmp" },
+    { "name": "$WinREAgent" }
   ],
   "search": {
     "MAX_RESULTS": "200",

@@ -4,13 +4,74 @@ const path = require("path");
 const archiver = require("archiver");
 const multer = require("multer");
 const unzipper = require("unzipper");
+const { execSync } = require("child_process");
 
 module.exports = () => {
   const router = express.Router();
 
+   const formatBytes = (bytes) => {
+    if (bytes === 0) return "0 B";
+    const k = 1024;
+    const sizes = ["B", "KB", "MB", "GB", "TB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  };
+
   // --- drives list ---
   router.get("/drives", (req, res) => {
-    const drives = require("../config/diskette.json").drives;
+    let drives = require("../config/diskette.json").drives;
+    try {
+      const output = execSync(
+        'wmic logicaldisk where "drivetype=3" get caption,size,freespace /format:csv',
+        { encoding: "utf8" }
+      );
+      const lines = output
+        .trim()
+        .split("\n")
+        .filter((line) => line.trim());
+      if (lines.length < 2) {
+        drives.forEach((d) => (d.enabled = false));
+      } else {
+        const headers = lines[0].split(",").map((h) => h.trim().toLowerCase());
+        const captionIdx = headers.indexOf("caption");
+        const freeIdx = headers.indexOf("freespace");
+        const sizeIdx = headers.indexOf("size");
+        if (captionIdx === -1 || freeIdx === -1 || sizeIdx === -1) {
+          drives.forEach((d) => (d.enabled = false));
+        } else {
+          const driveMap = {};
+          for (let i = 1; i < lines.length; i++) {
+            const cols = lines[i]
+              .split(",")
+              .map((c) => c.trim().replace(/"/g, ""));
+            const letter = cols[captionIdx];
+            const free = parseInt(cols[freeIdx]) || 0;
+            const size = parseInt(cols[sizeIdx]) || 0;
+            driveMap[letter] = { free, size };
+          }
+          drives.forEach((d) => {
+            if (!d.enabled) return; // if hidden in config, keep disabled
+            const data = driveMap[d.letter];
+            if (data) {
+              const usedBytes = data.size - data.free;
+              d.free = formatBytes(data.free);
+              d.limit = formatBytes(data.size);
+              d.used = formatBytes(usedBytes);
+              d.usedPercent =
+                data.size > 0 ? Math.round((usedBytes / data.size) * 100) : 0;
+              d.enabled = true;
+            } else {
+              d.enabled = false;
+            }
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Error getting disk space:", err);
+      drives.forEach((d) => (d.enabled = false));
+    }
+
+    //console.log("drives" + JSON.stringify(drives))
     res.json(drives);
   });
 
@@ -32,24 +93,31 @@ module.exports = () => {
         return res.status(400).json({ error: "Invalid path" });
       }
 
-      const hiddenFolders = ["System Volume Information", "$RECYCLE.BIN"];
+      const config = require("../config/diskette.json");
+      const hiddenFolders = config.hidden.map(h => h.name.toLowerCase());
 
       const items = fs
         .readdirSync(folderPath)
         .filter(
-          (name) => !name.startsWith(".") && !hiddenFolders.includes(name)
+          (name) => !name.startsWith(".") && !hiddenFolders.includes(name.toLowerCase())
         )
         .map((name) => {
           const fullPath = path.join(folderPath, name);
-          const stats = fs.statSync(fullPath);
-          return {
-            name,
-            isDirectory: stats.isDirectory(),
-            size: stats.size,
-            mtime: stats.mtime,
-            path: fullPath,
-          };
-        });
+          try {
+            const stats = fs.statSync(fullPath);
+            return {
+              name,
+              isDirectory: stats.isDirectory(),
+              size: stats.size,
+              mtime: stats.mtime,
+              path: fullPath,
+            };
+          } catch (err) {
+            console.warn(`Skipping inaccessible item: ${fullPath} - ${err.message}`);
+            return null;
+          }
+        })
+        .filter(item => item !== null);
 
       res.json({ items });
     } catch (err) {
@@ -133,8 +201,46 @@ module.exports = () => {
     }
   });
 
-  // --- Delete file/folder ---
+  // --- Delete file/folder to recycle bin ---
   router.post("/delete", (req, res) => {
+    const { path: targetPath } = req.body;
+    if (!targetPath)
+      return res.json({ success: false, message: "Invalid path" });
+
+    try {
+      // Get drive letter, e.g., 'D:' from 'D:\path\to\file'
+      const drive = targetPath.split(":")[0] + ":";
+      const recycleBinPath = path.join(drive, "CloudRecycleBin");
+
+      // Create RecycleBin folder if it doesn't exist
+      if (!fs.existsSync(recycleBinPath)) {
+        fs.mkdirSync(recycleBinPath, { recursive: true });
+      }
+
+      // Generate unique name to avoid conflicts
+      const baseName = path.basename(targetPath);
+      let recycleName = baseName;
+      let counter = 1;
+      while (fs.existsSync(path.join(recycleBinPath, recycleName))) {
+        const ext = path.extname(baseName);
+        const nameWithoutExt = path.basename(baseName, ext);
+        recycleName = `${nameWithoutExt}_${counter}${ext}`;
+        counter++;
+      }
+
+      const recycleFullPath = path.join(recycleBinPath, recycleName);
+
+      // Move file/folder to recycle bin
+      fs.renameSync(targetPath, recycleFullPath);
+      res.json({ success: true });
+    } catch (err) {
+      console.error("Recycle error:", err);
+      res.json({ success: false, message: err.message });
+    }
+  });
+
+  // --- Permanently delete file/folder ---
+  router.post("/delete-permanent", (req, res) => {
     const { path: targetPath } = req.body;
     if (!targetPath)
       return res.json({ success: false, message: "Invalid path" });
@@ -146,7 +252,7 @@ module.exports = () => {
       else fs.unlinkSync(targetPath);
       res.json({ success: true });
     } catch (err) {
-      console.error("Delete error:", err);
+      console.error("Permanent delete error:", err);
       res.json({ success: false, message: err.message });
     }
   });
@@ -396,8 +502,15 @@ module.exports = () => {
     }
 
     try {
+      const zipName = path.basename(zipPath, ".zip");
+      const extractPath = path.join(destination, zipName);
+
+      if (!fs.existsSync(extractPath)) {
+        fs.mkdirSync(extractPath, { recursive: true });
+      }
+
       fs.createReadStream(zipPath)
-        .pipe(unzipper.Extract({ path: destination }))
+        .pipe(unzipper.Extract({ path: extractPath }))
         .on("close", () => {
           res.json({ success: true });
         })

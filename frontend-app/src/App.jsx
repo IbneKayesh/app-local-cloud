@@ -6,7 +6,7 @@ import CloudPage from "./pages/cloud/CloudPage";
 import SettingsPage from "./pages/settings/SettingsPage";
 
 const App = () => {
-  const [selectedKey, setSelectedKey] = useState("1");
+  const [selectedKey, setSelectedKey] = useState("");
 
   const renderContent = () => {
     switch (selectedKey) {
