@@ -164,7 +164,7 @@ const CloudPage = ({ setSelectedKey }) => {
   };
 
   const size_body = (rowData) => {
-    return rowData.isDirectory ? "-" : formatBytes(rowData.size);
+    return rowData.isDirectory ? rowData.size : formatBytes(rowData.size);
   };
 
   const mtime_body = (rowData) => {

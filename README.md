@@ -1,4 +1,4 @@
-# Local Cloud: Make your Laptop/Computer Storage as a Local Cloud Storage System
+# Turn your Laptop/Computer Storage as a Local Cloud Storage System
 
 ## How to run?
 

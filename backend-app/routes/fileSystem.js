@@ -17,6 +17,24 @@ module.exports = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
+  const getFolderItemCount = (folderPath) => {
+    let fileCount = 0, folderCount = 0;
+    try {
+      const contents = fs.readdirSync(folderPath);
+      for (const item of contents) {
+        const itemPath = path.join(folderPath, item);
+        try {
+          const itemStats = fs.statSync(itemPath);
+          if (itemStats.isDirectory()) folderCount++;
+          else fileCount++;
+        } catch {}
+      }
+    } catch {}
+    return { fileCount, folderCount };
+  };
+
+
+
   // --- drives list ---
   router.get("/drives", (req, res) => {
     let drives = require("../config/diskette.json").drives;
@@ -105,10 +123,17 @@ module.exports = () => {
           const fullPath = path.join(folderPath, name);
           try {
             const stats = fs.statSync(fullPath);
+            let size;
+            if (stats.isDirectory()) {
+              const { fileCount, folderCount } = getFolderItemCount(fullPath);
+              size = `${fileCount} files ${folderCount} folders`;
+            } else {
+              size = stats.size;
+            }
             return {
               name,
               isDirectory: stats.isDirectory(),
-              size: stats.size,
+              size,
               mtime: stats.mtime,
               path: fullPath,
             };
