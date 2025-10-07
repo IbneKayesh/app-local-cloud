@@ -24,7 +24,7 @@ const localIp = getLocalIp();
 // CORS setup
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(",")
-  : ["http://localhost:7070", `http://${localIp}:${PORT}`];
+  : ["http://localhost:7070", `http://${localIp}:7070`, `http://${localIp}:${PORT}`];
 
 app.use(cors({
   origin: (origin, callback) => {

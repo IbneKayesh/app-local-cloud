@@ -187,6 +187,14 @@ const ToolbarComponent = ({
         </>
       )}
       <Button
+        tooltip="Galary View"
+        tooltipOptions={{ position: "left" }}
+        icon="pi pi-image"
+        className="mr-2"
+        size="small"
+        onClick={() => setItemViewMode("galary")}
+      />
+      <Button
         tooltip="Settings"
         tooltipOptions={{ position: "left" }}
         icon="pi pi-cog"

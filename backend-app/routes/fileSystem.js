@@ -9,7 +9,7 @@ const { execSync } = require("child_process");
 module.exports = () => {
   const router = express.Router();
 
-   const formatBytes = (bytes) => {
+  const formatBytes = (bytes) => {
     if (bytes === 0) return "0 B";
     const k = 1024;
     const sizes = ["B", "KB", "MB", "GB", "TB"];
@@ -18,7 +18,8 @@ module.exports = () => {
   };
 
   const getFolderItemCount = (folderPath) => {
-    let fileCount = 0, folderCount = 0;
+    let fileCount = 0,
+      folderCount = 0;
     try {
       const contents = fs.readdirSync(folderPath);
       for (const item of contents) {
@@ -32,8 +33,6 @@ module.exports = () => {
     } catch {}
     return { fileCount, folderCount };
   };
-
-
 
   // --- drives list ---
   router.get("/drives", (req, res) => {
@@ -112,12 +111,13 @@ module.exports = () => {
       }
 
       const config = require("../config/diskette.json");
-      const hiddenFolders = config.hidden.map(h => h.name.toLowerCase());
+      const hiddenFolders = config.hidden.map((h) => h.name.toLowerCase());
 
       const items = fs
         .readdirSync(folderPath)
         .filter(
-          (name) => !name.startsWith(".") && !hiddenFolders.includes(name.toLowerCase())
+          (name) =>
+            !name.startsWith(".") && !hiddenFolders.includes(name.toLowerCase())
         )
         .map((name) => {
           const fullPath = path.join(folderPath, name);
@@ -138,11 +138,13 @@ module.exports = () => {
               path: fullPath,
             };
           } catch (err) {
-            console.warn(`Skipping inaccessible item: ${fullPath} - ${err.message}`);
+            console.warn(
+              `Skipping inaccessible item: ${fullPath} - ${err.message}`
+            );
             return null;
           }
         })
-        .filter(item => item !== null);
+        .filter((item) => item !== null);
 
       res.json({ items });
     } catch (err) {
