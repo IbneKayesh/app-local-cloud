@@ -11,6 +11,7 @@ const ToolbarComponent = ({
   setDiskStorageView,
   handleRefreshDlgClick,
   handleUploaderDlgClick,
+  handleUploaderChnkDlgClick,
   handleNewFolderDlgClick,
   itemViewMode,
   setItemViewMode,
@@ -54,6 +55,15 @@ const ToolbarComponent = ({
         size="small"
         onClick={(e) => {
           handleUploaderDlgClick(e);
+        }}
+      />
+      <Button
+        tooltip="Upload Large File (Chunked)"
+        icon="pi pi-arrow-circle-up"
+        className="mr-2"
+        size="small"
+        onClick={(e) => {
+          handleUploaderChnkDlgClick(e);
         }}
       />
       <Button

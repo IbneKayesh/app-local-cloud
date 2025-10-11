@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 7071;
 const HOST = "0.0.0.0";
 
 // Timeout for large uploads
-app.set('timeout', 24 * 60 * 60 * 1000);
+//app.set('timeout', 24 * 60 * 60 * 1000);
 
 function getLocalIp() {
   const interfaces = os.networkInterfaces();
@@ -24,7 +24,7 @@ const localIp = getLocalIp();
 // CORS setup
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(",")
-  : ["http://localhost:7070", `http://${localIp}:7070`, `http://${localIp}:${PORT}`];
+  : ["http://localhost:7070", `http://${localIp}:7070`, `http://${localIp}:${PORT}`, "http://192.168.0.118:7070"];
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -48,8 +48,11 @@ app.use("/api/filesystem", fileSystemRoutes);
 
 // ------------------------
 // Start server
-app.listen(PORT, HOST, () => {
+const server = app.listen(PORT, HOST, () => {
   console.log(`Server running on:`);
   console.log(` → Local:  http://localhost:${PORT}`);
   console.log(` → LAN:    http://${localIp}:${PORT}`);
 });
+
+
+server.setTimeout(24 * 60 * 60 * 1000); // 24 hours

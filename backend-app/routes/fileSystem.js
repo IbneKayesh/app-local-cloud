@@ -348,6 +348,9 @@ module.exports = () => {
   // Multer setup
   const storage = multer.diskStorage({
     destination: (req, file, cb) => {
+      if (!req.query.currentPath) {
+        return cb(new Error("currentPath query parameter is required"));
+      }
       const uploadPath = path.normalize(req.query.currentPath);
       if (fs.existsSync(uploadPath) && !fs.statSync(uploadPath).isDirectory()) {
         return cb(new Error("Path is not a directory"));
@@ -410,6 +413,154 @@ module.exports = () => {
     // Save/move file if needed, currently it's stored in `uploads/`
     res.json({ success: true, file: req.file });
   });
+
+  // --- start :: Chunked Upload Routes ---
+
+  // --- Chunked Upload Setup ---
+  const chunkStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      //console.log("req.body" + JSON.stringify(req.body));
+
+      if (!req.body.uploadId) {
+        return cb(new Error("uploadId is required"));
+      }
+      const uploadId = req.body.uploadId;
+      const tempDir = path.join(__dirname, "temp", uploadId);
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
+      cb(null, tempDir);
+    },
+    filename: (req, file, cb) => {
+      const chunkIndex = req.body.chunkIndex;
+      cb(null, `chunk_${chunkIndex}`);
+    },
+  });
+  const chunkUpload = multer({
+    storage: chunkStorage,
+    limits: { fileSize: 2 * 1024 * 1024 }, // 2MB per chunk
+  });
+
+  router.post("/chunked-upload/init", (req, res) => {
+    const { fileName, totalChunks, currentPath } = req.body;
+    if (!fileName || !totalChunks || !currentPath) {
+      return res.status(400).json({ error: "Missing parameters" });
+    }
+
+    const uploadId =
+      Date.now().toString() + Math.random().toString(36).substr(2, 9);
+    const tempDir = path.join(__dirname, "temp", uploadId);
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true });
+    }
+
+    res.json({ uploadId, message: "Upload initialized" });
+  });
+
+  router.post(
+    "/chunked-upload/chunk",
+    chunkUpload.single("chunk"),
+    (req, res) => {
+      console.log("Received chunk upload:", JSON.stringify(req.body));
+
+      const { uploadId, chunkIndex, totalChunks } = req.body;
+      if (!uploadId || chunkIndex === undefined || !totalChunks) {
+        return res.status(400).json({ error: "Missing chunk parameters" });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ error: "No chunk uploaded" });
+      }
+
+      res.json({ message: `Chunk ${chunkIndex} uploaded successfully` });
+    }
+  );
+
+  router.post("/chunked-upload/complete_old", (req, res) => {
+    const { uploadId, fileName, currentPath, totalChunks } = req.body;
+    if (!uploadId || !fileName || !currentPath || !totalChunks) {
+      return res.status(400).json({ error: "Missing completion parameters" });
+    }
+
+    const tempDir = path.join(__dirname, "temp", uploadId);
+    const finalPath = path.join(path.normalize(currentPath), fileName);
+
+    try {
+      const writeStream = fs.createWriteStream(finalPath);
+      for (let i = 0; i < totalChunks; i++) {
+        const chunkPath = path.join(tempDir, `chunk_${i}`);
+        if (!fs.existsSync(chunkPath)) {
+          return res.status(400).json({ error: `Missing chunk ${i}` });
+        }
+        const chunkData = fs.readFileSync(chunkPath);
+        writeStream.write(chunkData);
+      }
+      writeStream.end();
+
+      // Clean up temp directory
+      fs.rmSync(tempDir, { recursive: true, force: true });
+
+      res.json({ success: true, message: "File assembled successfully" });
+    } catch (err) {
+      console.error("Error assembling file:", err);
+      res.status(500).json({ error: "Failed to assemble file" });
+    }
+  });
+
+  router.post("/chunked-upload/complete", (req, res) => {
+    const { uploadId, fileName, currentPath, totalChunks } = req.body;
+    if (!uploadId || !fileName || !currentPath || !totalChunks) {
+      return res.status(400).json({ error: "Missing completion parameters" });
+    }
+
+    const tempDir = path.join(__dirname, "temp", uploadId);
+    const finalPath = path.join(path.normalize(currentPath), fileName);
+
+    const writeStream = fs.createWriteStream(finalPath);
+    let currentIndex = 0;
+
+    function writeNext() {
+      if (currentIndex >= totalChunks) {
+        writeStream.end();
+        return;
+      }
+
+      const chunkPath = path.join(tempDir, `chunk_${currentIndex}`);
+      if (!fs.existsSync(chunkPath)) {
+        writeStream.destroy(new Error(`Missing chunk ${currentIndex}`));
+        return;
+      }
+
+      const readStream = fs.createReadStream(chunkPath);
+      readStream.pipe(writeStream, { end: false });
+
+      readStream.on("end", () => {
+        currentIndex++;
+        writeNext();
+      });
+
+      readStream.on("error", (err) => {
+        writeStream.destroy(err);
+      });
+    }
+
+    writeNext();
+
+    writeStream.on("finish", () => {
+      // Clean up temp directory
+      fs.rmSync(tempDir, { recursive: true, force: true });
+      
+      console.log("File assembled successfully.");
+      res.json({ success: true, message: "File assembled successfully" });
+    });
+
+    writeStream.on("error", (err) => {
+      console.error("Error assembling file:", err);
+      res.status(500).json({ error: "Failed to assemble file" });
+    });
+  });
+
+  // --- end :: Chunked Upload Routes ---
 
   // --- Search ---
   // Configurable limits

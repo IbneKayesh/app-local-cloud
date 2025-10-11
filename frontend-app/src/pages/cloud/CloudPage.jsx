@@ -11,6 +11,7 @@ import DeleteBinComponent from "./DeleteBinComponent";
 import DeleteComponent from "./DeleteComponent";
 import NewFolderComponent from "./NewFolderComponent";
 import UploadComponent from "./UploadComponent";
+import UploadChunkComponent from "./UploadChunkComponent";
 import TableViewComponent from "./TableViewComponent";
 import GridViewComponent from "./GridViewComponent";
 import TableGroupViewComponent from "./TableGroupViewComponent";
@@ -73,9 +74,12 @@ const CloudPage = ({ setSelectedKey }) => {
 
     //uploader
     handleUploaderDlgClick,
+    handleUploaderChnkDlgClick,
     uploaderDlg,
     setUploaderDlg,
     handleUploaderBtnClick,
+    uploaderChnkDlg,
+    setUploaderChnkDlg,
 
     //selected item
     selectedItem,
@@ -514,7 +518,7 @@ const CloudPage = ({ setSelectedKey }) => {
       icon = "txt";
     }
     return (
-      <div className="flex align-items-center gap-1">
+      <div className="flex align-items-center gap-1" style={{ cursor: rowData.isDirectory ? 'pointer' : 'default' }}>
         <img
           src={`/icons/vivid/${icon}.svg`}
           alt={rowData.name}
@@ -554,6 +558,7 @@ const CloudPage = ({ setSelectedKey }) => {
         setDiskStorageView={setDiskStorageView}
         handleRefreshDlgClick={handleRefreshDlgClick}
         handleUploaderDlgClick={handleUploaderDlgClick}
+        handleUploaderChnkDlgClick={handleUploaderChnkDlgClick}
         handleNewFolderDlgClick={handleNewFolderDlgClick}
         itemViewMode={itemViewMode}
         setItemViewMode={setItemViewMode}
@@ -681,6 +686,7 @@ const CloudPage = ({ setSelectedKey }) => {
       />
 
       <DeleteBinComponent
+        loading={loading}
         deleteBinDlg={deleteBinDlg}
         setDeleteBinDlg={setDeleteBinDlg}
         selectedItem={selectedItem}
@@ -688,6 +694,7 @@ const CloudPage = ({ setSelectedKey }) => {
       />
 
       <DeleteComponent
+        loading={loading}
         deleteDlg={deleteDlg}
         setDeleteDlg={setDeleteDlg}
         selectedItem={selectedItem}
@@ -708,6 +715,13 @@ const CloudPage = ({ setSelectedKey }) => {
         baseUrl={baseUrl}
         currentPath={currentPath}
         handleRefreshDlgClick={handleRefreshDlgClick}
+      />
+
+      <UploadChunkComponent
+        uploaderDlg={uploaderChnkDlg}
+        setUploaderDlg={setUploaderChnkDlg}
+        baseUrl={baseUrl}
+        currentPath={currentPath}
       />
 
       <PreviewComponent

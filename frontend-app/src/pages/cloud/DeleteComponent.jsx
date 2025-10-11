@@ -2,6 +2,7 @@ import { Dialog } from "primereact/dialog";
 import { Button } from "primereact/button";
 
 const DeleteComponent = ({
+  loading,
   deleteDlg,
   setDeleteDlg,
   selectedItem,
@@ -25,9 +26,10 @@ const DeleteComponent = ({
           </div>
           <div className="flex flex-wrap align-items-right gap-2">
             <Button
-              label="Done"
+              label={loading ? "Deleting..." : "Done"}
+              icon={loading ? "pi pi-spin pi-spinner" : "pi pi-check"}
+              disabled={loading}
               severity="danger"
-              icon="pi pi-check"
               onClick={handleDeleteBtnClick}
             />
           </div>

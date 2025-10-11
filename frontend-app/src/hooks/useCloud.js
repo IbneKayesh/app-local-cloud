@@ -28,6 +28,7 @@ const useCloud = () => {
   const [newFolderFromData, setNewFolderFromData] = useState({});
 
   const [uploaderDlg, setUploaderDlg] = useState(false);
+  const [uploaderChnkDlg, setUploaderChnkDlg] = useState(false);
 
   const [moveDlg, setMoveDlg] = useState(false);
   const [moveFromData, setMoveFromData] = useState({});
@@ -321,8 +322,6 @@ const useCloud = () => {
     }
   };
 
-
-  
   const handleDeleteDlgClick = () => {
     setDeleteDlg(true);
   };
@@ -393,6 +392,10 @@ const useCloud = () => {
 
   const handleUploaderDlgClick = () => {
     setUploaderDlg(true);
+  };
+
+  const handleUploaderChnkDlgClick = () => {
+    setUploaderChnkDlg(true);
   };
 
   const handleUploaderBtnClick = async (files) => {
@@ -723,9 +726,12 @@ const useCloud = () => {
 
     //uploader
     handleUploaderDlgClick,
+    handleUploaderChnkDlgClick,
     uploaderDlg,
     setUploaderDlg,
     handleUploaderBtnClick,
+    uploaderChnkDlg,
+    setUploaderChnkDlg,
 
     //selected item
     selectedItem,
